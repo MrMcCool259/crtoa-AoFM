@@ -12,6 +12,7 @@
     --accent:#cfe8ff;
     --card:#0b1220;
     --card-border: rgba(255,255,255,0.04);
+    --highlight: rgba(255,193,7,0.85);
   }
   html,body{height:100%;width:100%;margin:0;padding:10px;background:var(--bg);color:var(--accent);font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial;box-sizing:border-box;}
   *{box-sizing:inherit}
@@ -31,6 +32,9 @@
   .placed-red{background:linear-gradient(135deg,#fca5a5,#fecaca)}
   .placed-green{background:linear-gradient(135deg,#86efac,#bbf7d0)}
   .placed-blue{background:linear-gradient(135deg,#93c5fd,#bfdbfe)}
+
+  /* Visual highlight for potential extra placement */
+  .extra-highlight { outline: 3px solid var(--highlight); outline-offset: -3px; }
 
   /* Compact palette layout, but each category in its own card */
   .palette-wrap{display:flex;gap:10px;align-items:flex-start;flex:1;min-width:360px;max-width:760px}
@@ -62,6 +66,12 @@
   .selected-mini .mcell.on{background:linear-gradient(180deg,#bae6fd,#60a5fa)}
   .selected-count{font-weight:700;color:var(--accent);padding-left:6px;margin-left:6px;border-left:1px solid rgba(255,255,255,0.03)}
 
+  /* indicator for extra slots */
+  .extra-indicator { margin-top:8px; padding:8px; border-radius:6px; background: linear-gradient(180deg,#071421,#061219); border:1px solid rgba(255,255,255,0.03); color:#cfe8ff; font-size:13px; }
+  .extra-list { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+  .extra-item { display:flex; gap:6px; align-items:center; padding:6px; border-radius:6px; background: rgba(255,255,255,0.02); }
+  .extra-item button { padding:4px 6px; font-size:12px; border-radius:6px; }
+
   /* placements list */
   .placements{margin-top:8px;font-size:13px;color:var(--accent);max-height:180px;overflow:auto}
 
@@ -79,7 +89,7 @@
 <div class="wrap">
   <div class="board">
     <div class="controls-top">
-      <div style="color:#9fb6d4;font-size:12px">Click cells to toggle locked/unlocked</div>
+      <div style="color:#9fb6d4;font-size:12px">Click tiles to toggle locked/unlocked</div>
       <div style="display:flex;gap:8px">
         <button id="solveBtn">Solve</button>
         <button id="resetGrid" class="secondary">Reset</button>
@@ -95,6 +105,12 @@
         <div>Selected shapes <span style="color:#9fb6d4;font-weight:400;margin-left:8px;font-size:12px">(click to remove one instance)</span></div>
       </div>
       <div id="selectedList" class="selected-list"></div>
+
+      <!-- Extra indicator (visible only when solution present & spare unlocked tiles) -->
+      <div id="extraIndicator" class="extra-indicator" style="display:none;">
+        <div id="extraHeader"></div>
+        <div id="extraList" class="extra-list"></div>
+      </div>
     </div>
 
     <div class="placements" id="placements"></div>
@@ -120,23 +136,18 @@
 
 <script>
 /* Compact preview JS updated:
-   - Reverted layout to compact iteration
-   - Increased grid cell size to 44px for a larger board
-   - Each category sits in its own separate card
-   - New behavior: when clicking a selected-shape to delete:
-       * if a solution is NOT present, the shape is deleted (count decremented) only (no solver run)
-       * if a solution IS present, the shape is deleted and the solver is re-run to update the solution
+   - Clear button clears the solution AND deletes all selected shapes (selected-list counts reset).
+   - When Solve (or an auto re-solve) fails, an "Invalid selection" message appears and the visualization clears.
+   - Other behaviors preserved: conditional deletion, extra-slot indicator, hover highlight, etc.
 */
 
 const ROWS = 7, COLS = 7;
 let unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
-let placedCells = {};
-let shapeTypes = [];
-let shapeCounts = {};
+let placedCells = {};         // map "r,c" -> { pid, colorClass }
+let shapeTypes = [];          // list of {id, cells, baseName, size}
+let shapeCounts = {};         // id -> count
 const MAX_PIECES = 15;
-
-// track whether a solution is currently visualized
-let hasSolution = false;
+let hasSolution = false;      // whether a solution is currently visualized
 
 /* default center 3x5 unlocked */
 function applyDefaultCenter(){
@@ -206,14 +217,25 @@ function buildShapeTypes(){
   }
 }
 
-/* rendering and UI wiring */
+/* UI elements */
 const gridEl = document.getElementById('grid');
 const colA = document.getElementById('colA');
 const colB = document.getElementById('colB');
 const colC = document.getElementById('colC');
 const selectedListEl = document.getElementById('selectedList');
 const placementsEl = document.getElementById('placements');
+const extraIndicatorEl = document.getElementById('extraIndicator');
+const extraHeaderEl = document.getElementById('extraHeader');
+const extraListEl = document.getElementById('extraList');
 
+/* Helpers to show invalid selection message and clear visualization */
+function showInvalidSelection(errorText){
+  clearSolution(); // clears visualization and hasSolution flag
+  placementsEl.innerHTML = `<div style="color:#fecaca;font-weight:700">Invalid selection — no tiling exists for the current selection.</div>
+    <div style="color:#9fb6d4;margin-top:6px">${errorText || 'Please adjust your selected shapes and try again.'}</div>`;
+}
+
+/* Grid rendering */
 function renderGrid(){
   gridEl.innerHTML = '';
   for(let r=0;r<ROWS;r++){
@@ -229,16 +251,18 @@ function renderGrid(){
       div.title = placed ? `Placed ${placed.pid}` : (unlocked[r][c] ? 'Unlocked' : 'Locked');
       div.textContent = placed ? placed.pid : '';
       div.addEventListener('click', ()=>{
-        // clear only if there's currently a solution visualized
+        // preserve behavior: clicking board clears solution only when one is present
         if(hasSolution) clearSolution();
         unlocked[r][c] = !unlocked[r][c];
         renderGrid();
+        updateExtraIndicator();
       });
       gridEl.appendChild(div);
     }
   }
 }
 
+/* Palette rendering into three separate cards */
 function renderPalette(){
   colA.innerHTML = ''; colB.innerHTML = ''; colC.innerHTML = '';
   const cats = { small:[], four:[], five:[], other:[] };
@@ -270,19 +294,19 @@ function renderPalette(){
 
     minus.addEventListener('click', ()=>{
       const cur = Math.max(0, parseInt(inp.value||0)-1);
-      inp.value = cur; shapeCounts[s.id]=cur; renderSelectedList();
+      inp.value = cur; shapeCounts[s.id]=cur; renderSelectedList(); updateExtraIndicator();
     });
     plus.addEventListener('click', ()=>{
       const total = totalSelectedPieces();
       if(total >= MAX_PIECES){ alert('Maximum total pieces reached ('+MAX_PIECES+')'); return; }
       const cur = Math.min(MAX_PIECES, parseInt(inp.value||0)+1);
-      inp.value = cur; shapeCounts[s.id]=cur; renderSelectedList();
+      inp.value = cur; shapeCounts[s.id]=cur; renderSelectedList(); updateExtraIndicator();
     });
     inp.addEventListener('change', ()=>{
       let v = parseInt(inp.value||0); if(isNaN(v)||v<0) v=0; if(v>MAX_PIECES) v=MAX_PIECES;
       const existingTotalExcludingThis = totalSelectedPieces() - (shapeCounts[s.id] || 0);
       if(existingTotalExcludingThis + v > MAX_PIECES) v = Math.max(0, MAX_PIECES - existingTotalExcludingThis);
-      inp.value=v; shapeCounts[s.id]=v; renderSelectedList();
+      inp.value=v; shapeCounts[s.id]=v; renderSelectedList(); updateExtraIndicator();
     });
 
     countWrap.appendChild(minus); countWrap.appendChild(inp); countWrap.appendChild(plus);
@@ -391,9 +415,26 @@ function visualizeSolution(sol){
     const txt = document.createElement('div'); txt.textContent = `${'P'+(i+1)}: ${pl.instId} anchor=${pl.anchor}`; txt.style.display='inline-block';
     div.appendChild(dot); div.appendChild(txt); placementsEl.appendChild(div);
   });
+
+  // update indicator for spare unlocked tiles
+  updateExtraIndicator();
 }
 
-function clearSolution(){ placedCells = {}; placementsEl.innerHTML=''; hasSolution = false; renderGrid(); }
+function clearSolution(){ placedCells = {}; placementsEl.innerHTML=''; hasSolution = false; renderGrid(); updateExtraIndicator(); }
+
+/* Clear ALL selections + visualization (used for Clear button) */
+function clearAllSelections(){
+  // reset counts
+  for(const id in shapeCounts) shapeCounts[id] = 0;
+  // re-render palette (so inputs show 0)
+  renderPalette();
+  // clear selected list view
+  renderSelectedList();
+  // clear visualization
+  clearSolution();
+  // clear placements message area
+  placementsEl.innerHTML = '';
+}
 
 /* selected list */
 function totalSelectedPieces(){ let sum=0; for(const k in shapeCounts) sum += (shapeCounts[k]||0); return sum; }
@@ -441,20 +482,16 @@ function renderSelectedList(){
         const res = solveOnce(MAX_PIECES);
         if(res.ok){
           if(res.placements.length === 0){
-            // no placements (maybe nothing selected) -> clear visualization
             clearSolution();
             placementsEl.innerHTML = 'No pieces selected (trivial).';
           } else {
             visualizeSolution(res.placements);
           }
         } else {
-          // no solution after deletion -> clear visualization and show message
-          clearSolution();
-          placementsEl.innerHTML = 'No solution: ' + (res.error || 'unknown');
+          showInvalidSelection(res.error);
         }
       } else {
         // No solution currently present: per request, do NOT run solver; only delete the shape
-        // Keep placements area untouched (it may contain previous messages) and do not change visualization
       }
     });
 
@@ -462,7 +499,111 @@ function renderSelectedList(){
   });
 }
 
-/* hooks */
+/* --- Extra indicator logic (unchanged) --- */
+function getUncoveredUnlockedSet(){
+  const set = new Set();
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const k = r+','+c;
+      if(unlocked[r][c] && !placedCells[k]) set.add(k);
+    }
+  }
+  return set;
+}
+
+function findExtraPlacementsExample(){
+  const uncovered = getUncoveredUnlockedSet();
+  if(uncovered.size === 0) return [];
+  const examples = [];
+  for(const s of shapeTypes){
+    if(s.size <= 1) continue;
+    const placements = generatePlacementsFor(s);
+    for(const p of placements){
+      const ok = p.cells.every(([r,c]) => uncovered.has(r+','+c));
+      if(ok){
+        examples.push({ shape: s, placement: p });
+        break;
+      }
+    }
+  }
+  return examples;
+}
+
+function clearHighlights(){
+  document.querySelectorAll('.cell.extra-highlight').forEach(el=>{
+    el.classList.remove('extra-highlight');
+  });
+}
+
+function highlightPlacement(placement){
+  clearHighlights();
+  for(const [r,c] of placement.cells){
+    const selector = `.cell[data-rc="${r},${c}"]`;
+    const el = document.querySelector(selector);
+    if(el) el.classList.add('extra-highlight');
+  }
+}
+
+function updateExtraIndicator(){
+  if(!hasSolution){ extraIndicatorEl.style.display = 'none'; clearHighlights(); return; }
+  const examples = findExtraPlacementsExample();
+  if(examples.length === 0){ extraIndicatorEl.style.display = 'none'; clearHighlights(); return; }
+  extraIndicatorEl.style.display = 'block';
+  extraHeaderEl.textContent = `Additional placements possible: ${examples.length} oriented shape${examples.length>1?'s':''} (excluding 1-tile)`;
+  extraListEl.innerHTML = '';
+  for(const ex of examples){
+    const item = document.createElement('div'); item.className='extra-item';
+    const mini = document.createElement('div'); mini.className='mini';
+    const s = ex.shape;
+    const maxR = Math.max(...s.cells.map(p=>p[0])); const maxC = Math.max(...s.cells.map(p=>p[1]));
+    const h = Math.max(1, Math.min(3, maxR+1)); const w = Math.max(1, Math.min(3, maxC+1));
+    mini.style.gridTemplateColumns = `repeat(${w},12px)`;
+    for(let rr=0; rr<h; rr++){
+      for(let cc=0; cc<w; cc++){
+        const mc = document.createElement('div'); mc.className='mcell';
+        if(s.cells.some(p=>p[0]===rr && p[1]===cc)) mc.classList.add('on');
+        mini.appendChild(mc);
+      }
+    }
+    const idSpan = document.createElement('div'); idSpan.style.color='#cfe8ff'; idSpan.style.fontSize='13px'; idSpan.textContent = s.id;
+    const plusBtn = document.createElement('button'); plusBtn.textContent = '+';
+    plusBtn.addEventListener('click', ()=>{
+      const total = totalSelectedPieces();
+      if(total >= MAX_PIECES){ alert('Maximum total pieces reached ('+MAX_PIECES+')'); return; }
+      shapeCounts[s.id] = (shapeCounts[s.id] || 0) + 1;
+      // update input in palette if visible
+      const inputs = document.querySelectorAll('.category-body input[type="number"]');
+      for(const inp of inputs){
+        const row = inp.closest('.shape-row'); if(!row) continue;
+        const idEl = row.querySelector('.shape-id'); if(!idEl) continue;
+        if(idEl.textContent === s.id){ inp.value = shapeCounts[s.id]; break; }
+      }
+      renderSelectedList();
+      // if solution currently present, re-run solver to update visualization
+      if(hasSolution){
+        const res = solveOnce(MAX_PIECES);
+        if(res.ok){
+          if(res.placements.length === 0){
+            clearSolution();
+            placementsEl.innerHTML = 'No pieces selected (trivial).';
+          } else {
+            visualizeSolution(res.placements);
+          }
+        } else {
+          showInvalidSelection(res.error);
+        }
+      }
+    });
+
+    item.addEventListener('mouseenter', ()=> highlightPlacement(ex.placement));
+    item.addEventListener('mouseleave', ()=> clearHighlights());
+
+    item.appendChild(mini); item.appendChild(idSpan); item.appendChild(plusBtn);
+    extraListEl.appendChild(item);
+  }
+}
+
+/* Hooks */
 document.getElementById('solveBtn').addEventListener('click', ()=>{
   placementsEl.innerHTML = 'Solving...';
   setTimeout(()=>{
@@ -470,11 +611,22 @@ document.getElementById('solveBtn').addEventListener('click', ()=>{
     if(res.ok){
       if(res.placements.length===0){ placementsEl.innerHTML='No pieces selected.'; clearSolution(); }
       else visualizeSolution(res.placements);
-    } else { placementsEl.innerHTML = 'No solution: ' + (res.error || 'unknown'); clearSolution(); }
+    } else { showInvalidSelection(res.error); }
   }, 50);
 });
-document.getElementById('resetGrid').addEventListener('click', ()=>{ clearSolution(); applyDefaultCenter(); renderGrid(); renderSelectedList(); });
-document.getElementById('clearSolution').addEventListener('click', ()=>{ clearSolution(); });
+
+// Reset grid preserves selection (existing behavior)
+document.getElementById('resetGrid').addEventListener('click', ()=>{
+  clearSolution();
+  applyDefaultCenter();
+  renderGrid();
+  renderSelectedList();
+});
+
+// Clear button: now deletes all selected shapes AND clears visualization/message
+document.getElementById('clearSolution').addEventListener('click', ()=>{
+  clearAllSelections();
+});
 
 /* init */
 applyDefaultCenter();
@@ -483,6 +635,7 @@ shapeTypes.forEach(s=> shapeCounts[s.id]=0);
 renderPalette();
 renderGrid();
 renderSelectedList();
+updateExtraIndicator();
 
 </script>
 </body>
