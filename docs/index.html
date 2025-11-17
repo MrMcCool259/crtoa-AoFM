@@ -20,8 +20,23 @@
   html,body{height:100%;width:100%;margin:0;padding:10px;background:var(--bg);color:var(--accent);font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial;box-sizing:border-box;}
   *{box-sizing:inherit}
   h1{margin:0 0 10px 0;font-size:16px}
-  .wrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+
+  /* Overall layout:
+     - topRow contains the grid (left) and infoPanel (right)
+     - paletteRow contains the category cards
+     If infoPanel would overlap palette cards, JS moves infoPanel below the palette (stretched full width).
+  */
+  .container{display:flex;flex-direction:column;gap:14px}
+  .topRow{display:flex;gap:14px;align-items:flex-start;flex-wrap:nowrap}
+  .grid-wrap{min-width:300px}
   .board{background:linear-gradient(180deg,#111827,#0b1220);padding:10px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.6);min-width:300px;max-width:360px}
+  .info-panel{background:linear-gradient(180deg,#07101a,#071421);padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:flex;gap:10px;align-items:flex-start}
+  /* By default info-panel sits to the right and its internal children are laid out in row */
+  .info-panel.row{display:flex;flex-direction:row;align-items:flex-start;gap:10px}
+  .info-panel.column{display:flex;flex-direction:column;align-items:stretch;gap:10px}
+  /* Stretched mode (used when moved below categories) */
+  .info-panel.stretched{width:100%}
+
   .controls-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
   button{background:#2563eb;color:white;border:none;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px}
   button.secondary{background:#1f2937;color:var(--accent);border:1px solid rgba(255,255,255,0.03);padding:6px 8px}
@@ -37,7 +52,8 @@
   .outline-epic { box-shadow: inset 0 0 0 3px var(--epic); }
   .outline-super { box-shadow: inset 0 0 0 3px var(--super); }
   .extra-highlight { outline: 3px solid var(--highlight); outline-offset: -3px; }
-  .palette-wrap{display:flex;gap:10px;align-items:flex-start;flex:1;min-width:360px;max-width:920px}
+
+  .palette-wrap{display:flex;gap:10px;align-items:flex-start;flex:1;min-width:360px;max-width:920px;flex-wrap:wrap}
   .category-card{background:linear-gradient(180deg,var(--card),#061018);border-radius:8px;padding:8px;border:1px solid var(--card-border);flex:1;display:flex;flex-direction:column;min-width:130px;max-height:640px;overflow:hidden}
   .category-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-weight:700;color:var(--accent);font-size:13px}
   .category-body{overflow:auto;padding-right:6px;flex:1}
@@ -53,7 +69,10 @@
   .shape-id{width:36px;font-size:12px;color:var(--muted);text-align:left}
   .count{display:flex;align-items:center;gap:6px;margin-left:auto}
   .count input{width:40px;font-size:12px;padding:4px;border-radius:6px;border:1px solid #213244;background:#071021;color:var(--accent);text-align:center;height:28px}
-  .selected-area{margin-top:8px;padding:8px;border-radius:8px;background:linear-gradient(180deg,#07101a,#071421);border:1px solid rgba(255,255,255,0.03)}
+
+  /* Selected / Included / Scoreboard styling (moved into info panel children) */
+  .panel-column{display:flex;flex-direction:column;gap:8px;min-width:180px}
+  .selected-area{padding:8px;border-radius:8px;background:linear-gradient(180deg,#07101a,#071421);border:1px solid rgba(255,255,255,0.03)}
   .selected-title{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--accent);font-weight:700}
   .selected-sets{display:flex;gap:8px}
   .selected-set{flex:1;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);min-height:80px;display:flex;flex-direction:column;gap:8px}
@@ -67,7 +86,7 @@
   .selected-mini .mcell{width:10px;height:10px;background:rgba(255,255,255,0.04);border-radius:2px}
   .selected-mini .mcell.on{background:linear-gradient(180deg,#bae6fd,#60a5fa)}
   .selected-count{font-weight:700;padding-left:6px;margin-left:6px;border-left:1px solid rgba(255,255,255,0.03)}
-  .included-area{margin-top:8px;padding:8px;border-radius:8px;background:linear-gradient(180deg,#06111a,#061216);border:1px solid rgba(255,255,255,0.02)}
+  .included-area{padding:8px;border-radius:8px;background:linear-gradient(180deg,#06111a,#061216);border:1px solid rgba(255,255,255,0.02)}
   .included-title{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--accent);font-weight:700}
   .included-sets{display:flex;gap:8px}
   .included-set{flex:1;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);min-height:80px;display:flex;flex-direction:column;gap:8px}
@@ -75,20 +94,23 @@
   .included-item.rare { background: var(--rare); color: #021029; }
   .included-item.epic { background: var(--epic); color: #fff; }
   .included-item.super { background: var(--super); color: #fff; }
+  .scoreboard { width:100%; border-collapse:collapse; font-size:13px; color:var(--accent); }
+  .scoreboard th, .scoreboard td { border:1px solid rgba(255,255,255,0.04); padding:6px 8px; text-align:center; }
+  .scoreboard .colheader { font-weight:700; }
+
   .extra-indicator { margin-top:8px; padding:8px; border-radius:6px; background: linear-gradient(180deg,#071421,#061219); border:1px solid rgba(255,255,255,0.03); color:#cfe8ff; font-size:13px; }
   .extra-list { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
   .extra-item { display:flex; gap:6px; align-items:center; padding:6px; border-radius:6px; background: rgba(255,255,255,0.02); }
   .extra-item button { padding:4px 6px; font-size:12px; border-radius:6px; }
-  .scoreboard { margin-top:10px; width:100%; border-collapse:collapse; font-size:13px; color:var(--accent);}
-  .scoreboard th, .scoreboard td { border:1px solid rgba(255,255,255,0.04); padding:6px 8px; text-align:center; }
-  .scoreboard .colheader { font-weight:700; }
   .placements{margin-top:8px;font-size:13px;color:var(--accent);max-height:180px;overflow:auto}
+
   .droppable-over { outline: 2px dashed rgba(255,255,255,0.12); }
+
   @media (max-width:980px){
-    .wrap{flex-direction:column;padding:6px}
-    .board{max-width:100%}
-    .palette-wrap{width:100%;flex-direction:column}
-    .category-card{max-height:220px}
+    .topRow{flex-direction:column}
+    .info-panel{width:100%}
+    .palette-wrap{width:100%;flex-direction:row;flex-wrap:wrap}
+    .category-card{max-width:48%}
     .grid{grid-template-columns:repeat(7,calc((100% - 6*6px)/7));grid-auto-rows:calc((100% - 6*6px)/7)}
   }
 </style>
@@ -96,83 +118,98 @@
 <body>
 <h1>CR:TOA Maximum Rift Resistance Optimizer</h1>
 
-<div class="wrap">
-  <div class="board">
-    <div class="controls-top">
-      <div style="color:#9fb6d4;font-size:12px">Click tiles to toggle locked/unlocked</div>
-      <div style="display:flex;gap:8px">
-        <button id="solveBtn">Solve (maximize Total)</button>
-        <button id="resetGrid" class="secondary">Reset</button>
-        <button id="clearAll" class="secondary">Clear</button>
+<div class="container">
+  <div class="topRow">
+    <div class="grid-wrap">
+      <div class="board">
+        <div class="controls-top">
+          <div style="color:#9fb6d4;font-size:12px">Click cells to toggle locked/unlocked</div>
+          <div style="display:flex;gap:8px">
+            <button id="solveBtn">Solve (maximize Total)</button>
+            <button id="resetGrid" class="secondary">Reset</button>
+            <button id="clearAll" class="secondary">Clear</button>
+          </div>
+        </div>
+
+        <div id="grid" class="grid" title="Click to toggle locked/unlocked"></div>
+
+        <div class="placements" id="placements"></div>
       </div>
     </div>
 
-    <div id="grid" class="grid" title="Click to toggle locked/unlocked"></div>
-
-    <div class="selected-area">
-      <div class="selected-title">
-        <span style="width:10px;height:10px;border-radius:50%;background:var(--rare);display:inline-block;"></span>
-        <div>Shapes selected <span style="color:#9fb6d4;font-weight:400;margin-left:8px;font-size:12px">(left-click to cycle rarity, right-click to delete, drag between sets)</span></div>
-      </div>
-
-      <div class="selected-sets">
-        <div class="selected-set" id="set1" data-set="1">
-          <div class="selected-set-header"><div>Set 1 (default)</div><div id="set1Count" style="color:#9fb6d4;font-weight:700">0</div></div>
-          <div id="selectedListSet1" class="selected-list" ondragover="event.preventDefault()"></div>
-        </div>
-        <div class="selected-set" id="set2" data-set="2">
-          <div class="selected-set-header"><div>Set 2</div><div id="set2Count" style="color:#9fb6d4;font-weight:700">0</div></div>
-          <div id="selectedListSet2" class="selected-list" ondragover="event.preventDefault()"></div>
-        </div>
-      </div>
-
-      <div class="included-area" id="includedArea">
-        <div class="included-title">
-          <span style="width:10px;height:10px;border-radius:50%;background:#9fb6d4;display:inline-block;"></span>
-          <div>Shapes included in the current solution (per set)</div>
-        </div>
-        <div class="included-sets">
-          <div class="included-set" id="includedSet1">
-            <div style="font-weight:700;color:var(--muted);display:flex;justify-content:space-between"><div>Set 1</div><div id="includedSet1Tiles" style="color:#9fb6d4">Tiles: 0</div></div>
-            <div id="includedListSet1" class="included-list"></div>
+    <!-- Info panel (separate box) - will contain: Shapes selected, Shapes included, Scoreboard -->
+    <div id="infoPanel" class="info-panel row" aria-label="Selection and Scoreboard panel">
+      <div class="panel-column" id="selectedPanel">
+        <div class="selected-area">
+          <div class="selected-title">
+            <span style="width:10px;height:10px;border-radius:50%;background:var(--rare);display:inline-block;"></span>
+            <div>Shapes selected <span style="color:#9fb6d4;font-weight:400;margin-left:8px;font-size:12px">(left-click to cycle rarity, right-click to delete, drag between sets)</span></div>
           </div>
-          <div class="included-set" id="includedSet2">
-            <div style="font-weight:700;color:var(--muted);display:flex;justify-content:space-between"><div>Set 2</div><div id="includedSet2Tiles" style="color:#9fb6d4">Tiles: 0</div></div>
-            <div id="includedListSet2" class="included-list"></div>
+
+          <div class="selected-sets">
+            <div class="selected-set" id="set1" data-set="1">
+              <div class="selected-set-header"><div>Set 1 (default)</div><div id="set1Count" style="color:#9fb6d4;font-weight:700">0</div></div>
+              <div id="selectedListSet1" class="selected-list" ondragover="event.preventDefault()"></div>
+            </div>
+            <div class="selected-set" id="set2" data-set="2">
+              <div class="selected-set-header"><div>Set 2</div><div id="set2Count" style="color:#9fb6d4;font-weight:700">0</div></div>
+              <div id="selectedListSet2" class="selected-list" ondragover="event.preventDefault()"></div>
+            </div>
           </div>
         </div>
       </div>
 
-      <div id="extraIndicator" class="extra-indicator" style="display:none;">
-        <div id="extraHeader"></div>
-        <div id="extraList" class="extra-list"></div>
+      <div class="panel-column" id="includedPanel">
+        <div class="included-area" id="includedArea">
+          <div class="included-title">
+            <span style="width:10px;height:10px;border-radius:50%;background:#9fb6d4;display:inline-block;"></span>
+            <div>Shapes included in the current solution (per set)</div>
+          </div>
+          <div class="included-sets">
+            <div class="included-set" id="includedSet1">
+              <div style="font-weight:700;color:var(--muted);display:flex;justify-content:space-between"><div>Set 1</div><div id="includedSet1Tiles" style="color:#9fb6d4">Tiles: 0</div></div>
+              <div id="includedListSet1" class="included-list"></div>
+            </div>
+            <div class="included-set" id="includedSet2">
+              <div style="font-weight:700;color:var(--muted);display:flex;justify-content:space-between"><div>Set 2</div><div id="includedSet2Tiles" style="color:#9fb6d4">Tiles: 0</div></div>
+              <div id="includedListSet2" class="included-list"></div>
+            </div>
+          </div>
+
+          <!-- EXTRA INDICATOR INSERTED HERE (fix for "extraIndicatorEl is null") -->
+          <div id="extraIndicator" class="extra-indicator" style="display:none;">
+            <div id="extraHeader"></div>
+            <div id="extraList" class="extra-list"></div>
+          </div>
+
+        </div>
       </div>
 
-      <table class="scoreboard" id="scoreboard" aria-label="Rift Resistance scoreboard">
-        <thead>
-          <tr>
-            <th class="colheader">Metric</th>
-            <th class="colheader" style="background:var(--rare);color:#021029">Rare</th>
-            <th class="colheader" style="background:var(--epic);">Epic</th>
-            <th class="colheader" style="background:var(--super);">Super Epic</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr><td>Tiles (Set 1)</td><td id="sb_tiles1_rare">0</td><td id="sb_tiles1_epic">0</td><td id="sb_tiles1_super">0</td></tr>
-          <tr><td>Rift Resistance (Set 1)</td><td id="sb_rr1_rare">0</td><td id="sb_rr1_epic">0</td><td id="sb_rr1_super">0</td></tr>
-          <tr><td>Set Bonus (Set 1)</td><td id="sb_set1_rare">0</td><td id="sb_set1_epic">0</td><td id="sb_set1_super">0</td></tr>
+      <div class="panel-column" id="scorePanel" style="min-width:220px">
+        <table class="scoreboard" id="scoreboard" aria-label="Rift Resistance scoreboard">
+          <thead>
+            <tr>
+              <th class="colheader">Metric</th>
+              <th class="colheader" style="background:var(--rare);color:#021029">Rare</th>
+              <th class="colheader" style="background:var(--epic);">Epic</th>
+              <th class="colheader" style="background:var(--super);">Super Epic</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Tiles (Set 1)</td><td id="sb_tiles1_rare">0</td><td id="sb_tiles1_epic">0</td><td id="sb_tiles1_super">0</td></tr>
+            <tr><td>Rift Resistance (Set 1)</td><td id="sb_rr1_rare">0</td><td id="sb_rr1_epic">0</td><td id="sb_rr1_super">0</td></tr>
+            <tr><td>Set Bonus (Set 1)</td><td id="sb_set1_rare">0</td><td id="sb_set1_epic">0</td><td id="sb_set1_super">0</td></tr>
 
-          <tr><td>Tiles (Set 2)</td><td id="sb_tiles2_rare">0</td><td id="sb_tiles2_epic">0</td><td id="sb_tiles2_super">0</td></tr>
-          <tr><td>Rift Resistance (Set 2)</td><td id="sb_rr2_rare">0</td><td id="sb_rr2_epic">0</td><td id="sb_rr2_super">0</td></tr>
-          <tr><td>Set Bonus (Set 2)</td><td id="sb_set2_rare">0</td><td id="sb_set2_epic">0</td><td id="sb_set2_super">0</td></tr>
-        </tbody>
-      </table>
-
+            <tr><td>Tiles (Set 2)</td><td id="sb_tiles2_rare">0</td><td id="sb_tiles2_epic">0</td><td id="sb_tiles2_super">0</td></tr>
+            <tr><td>Rift Resistance (Set 2)</td><td id="sb_rr2_rare">0</td><td id="sb_rr2_epic">0</td><td id="sb_rr2_super">0</td></tr>
+            <tr><td>Set Bonus (Set 2)</td><td id="sb_set2_rare">0</td><td id="sb_set2_epic">0</td><td id="sb_set2_super">0</td></tr>
+          </tbody>
+        </table>
+      </div>
     </div>
-
-    <div class="placements" id="placements"></div>
   </div>
 
+  <!-- Palette row (category cards) -->
   <div class="palette-wrap" id="paletteWrap">
     <div class="category-card" id="cardSmall">
       <div class="category-head"><span class="dot red"></span><div style="margin-left:6px">1–3 tiles</div></div>
@@ -192,6 +229,7 @@
 </div>
 
 <script>
+/* Error logging */
 window.addEventListener('error', (ev) => {
   console.error('Runtime error:', ev.error || ev.message, ev);
 });
@@ -199,8 +237,10 @@ window.addEventListener('unhandledrejection', (ev) => {
   console.error('Unhandled promise rejection:', ev.reason);
 });
 
+/* --- Main app --- */
 document.addEventListener('DOMContentLoaded', () => {
   try {
+    /* --- Config / state --- */
     const ROWS = 7, COLS = 7;
     const RARITY_ORDER = ['rare','epic','super'];
     const RARITY_VALUES = { rare: 30, epic: 60, super: 120 };
@@ -213,6 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let placedCells = {}; // "r,c" -> { pid, iid, rarity, set, colorClass }
     let hasSolution = false;
 
+    /* --- Geometry helpers --- */
     function normalize(cells){
       if(!cells.length) return [];
       const minr = Math.min(...cells.map(p=>p[0]));
@@ -238,6 +279,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return unique;
     }
 
+    /* --- Base shapes --- */
     const baseShapes = [
       {name:"monomino", cells:[[0,0]]},
       {name:"domino", cells:[[0,0],[0,1]]},
@@ -266,6 +308,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    /* --- DOM refs --- */
     const gridEl = document.getElementById('grid');
     const colA = document.getElementById('colA');
     const colB = document.getElementById('colB');
@@ -277,12 +320,24 @@ document.addEventListener('DOMContentLoaded', () => {
     const includedSet1TilesEl = document.getElementById('includedSet1Tiles');
     const includedSet2TilesEl = document.getElementById('includedSet2Tiles');
     const placementsEl = document.getElementById('placements');
-    const extraIndicatorEl = document.getElementById('extraIndicator');
-    const extraHeaderEl = document.getElementById('extraHeader');
-    const extraListEl = document.getElementById('extraList');
+    // extraIndicator and children (must exist in DOM - inserted above)
+    let extraIndicatorEl = document.getElementById('extraIndicator');
+    let extraHeaderEl = document.getElementById('extraHeader');
+    let extraListEl = document.getElementById('extraList');
     const set1CountEl = document.getElementById('set1Count');
     const set2CountEl = document.getElementById('set2Count');
+    const infoPanelEl = document.getElementById('infoPanel');
+    const paletteWrapEl = document.getElementById('paletteWrap');
 
+    /* Helper - safe get for elements that might be moved or re-inserted in DOM */
+    function ensureExtraElements() {
+      if (!extraIndicatorEl) extraIndicatorEl = document.getElementById('extraIndicator');
+      if (!extraHeaderEl) extraHeaderEl = document.getElementById('extraHeader');
+      if (!extraListEl) extraListEl = document.getElementById('extraList');
+      return { extraIndicatorEl, extraHeaderEl, extraListEl };
+    }
+
+    /* --- Default unlocked grid --- */
     function applyDefaultCenter(){
       unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
       const startR = Math.floor((ROWS-3)/2);
@@ -294,6 +349,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    /* --- Render grid --- */
     function renderGrid(){
       gridEl.innerHTML = '';
       for(let r=0;r<ROWS;r++){
@@ -328,6 +384,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    /* --- Palette --- */
     function renderPalette(){
       colA.innerHTML=''; colB.innerHTML=''; colC.innerHTML='';
       const cats={ small:[], four:[], five:[], other:[] };
@@ -361,13 +418,11 @@ document.addEventListener('DOMContentLoaded', () => {
           removeOneInstanceOfShape(s.id);
           inp.value = countInstancesOfShape(s.id);
           renderSelectedList();
-          updateExtraIndicator();
         });
         plus.addEventListener('click', ()=>{
           addInstance(s.id, s.size, s.baseName);
           inp.value = countInstancesOfShape(s.id);
           renderSelectedList();
-          updateExtraIndicator();
         });
         inp.addEventListener('change', ()=>{
           let v = parseInt(inp.value||0);
@@ -375,7 +430,6 @@ document.addEventListener('DOMContentLoaded', () => {
           setInstancesCountForShape(s.id, v, s.size, s.baseName);
           inp.value = countInstancesOfShape(s.id);
           renderSelectedList();
-          updateExtraIndicator();
         });
 
         countWrap.appendChild(minus); countWrap.appendChild(inp); countWrap.appendChild(plus);
@@ -389,8 +443,12 @@ document.addEventListener('DOMContentLoaded', () => {
         cats.five.forEach(s=>colC.appendChild(makeRow(s)));
         cats.other.forEach(s=>colC.appendChild(makeRow(s)));
       } else colC.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
+
+      // adjust info panel position after palette renders (it can change bounding boxes)
+      setTimeout(adjustInfoPanelPosition, 30);
     }
 
+    /* --- Selected instances management --- */
     let nextInstanceId = 1;
     function addInstance(shapeId, size, baseName){
       const iid = 'I' + (nextInstanceId++);
@@ -418,6 +476,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     function countInstancesOfShape(shapeId){ return selectedInstances.filter(s=>s.shapeId===shapeId).length; }
 
+    /* --- Drag and drop helpers --- */
     function onDragStart(ev, iid){
       ev.dataTransfer.setData('text/plain', iid);
       ev.dataTransfer.effectAllowed = 'move';
@@ -429,10 +488,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if(inst){
         inst.set = setNum;
         renderSelectedList();
-        // Do NOT re-run or update the current solution automatically.
       }
     }
 
+    /* --- Render selected list (per-instance) into two sets --- */
     function renderSelectedList(){
       selectedListSet1El.innerHTML = '';
       selectedListSet2El.innerHTML = '';
@@ -470,14 +529,12 @@ document.addEventListener('DOMContentLoaded', () => {
           ev.preventDefault();
           cycleRarityForInstance(inst.iid);
           renderSelectedList();
-          // Do NOT re-run or update the current solution automatically.
         });
         item.addEventListener('contextmenu', (ev)=>{
           ev.preventDefault();
           const idx = selectedInstances.findIndex(x=>x.iid===inst.iid);
           if(idx>=0) selectedInstances.splice(idx,1);
           renderSelectedList();
-          // Do NOT re-run or update the current solution automatically.
           renderPalette();
           updateExtraIndicator();
         });
@@ -489,7 +546,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       set1.forEach(inst => selectedListSet1El.appendChild(createItem(inst)));
       set2.forEach(inst => selectedListSet2El.appendChild(createItem(inst)));
-
+      // make containers droppable
       const set1El = document.getElementById('set1');
       const set2El = document.getElementById('set2');
       set1El.ondragover = (ev)=>{ ev.preventDefault(); set1El.classList.add('droppable-over'); };
@@ -523,6 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
+    /* --- Render included list (per-set) --- */
     function renderIncludedList(placements){
       includedListSet1El.innerHTML = '';
       includedListSet2El.innerHTML = '';
@@ -565,6 +623,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function clearIncludedList(){ includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedSet1TilesEl.textContent = 'Tiles: 0'; includedSet2TilesEl.textContent = 'Tiles: 0'; }
 
+    /* --- Placements generation --- */
     function generatePlacementsForShapeType(shape){
       const cells = shape.cells;
       const maxR = Math.max(...cells.map(p=>p[0]));
@@ -584,6 +643,7 @@ document.addEventListener('DOMContentLoaded', () => {
       return placements;
     }
 
+    /* --- Optimization solver --- */
     function computeSetBonus(sumTiles){
       if(sumTiles < 9) return 0;
       const increments = Math.floor((sumTiles - 9) / 3);
@@ -764,6 +824,7 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="color:#9fb6d4;margin-top:6px">${err || 'Please adjust your selected shapes and try again.'}</div>`;
     }
 
+    /* Extra indicator helpers */
     function getUncoveredUnlockedSet(){
       const set = new Set();
       for(let r=0;r<ROWS;r++){
@@ -800,12 +861,23 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function updateExtraIndicator(){
-      if(!hasSolution){ extraIndicatorEl.style.display='none'; clearHighlights(); return; }
+      // Ensure our element refs exist (in case panel was moved or recreated)
+      const els = ensureExtraElements();
+      const extraEl = els.extraIndicatorEl;
+      const headerEl = els.extraHeaderEl;
+      const listEl = els.extraListEl;
+
+      if(!extraEl || !headerEl || !listEl){
+        // If any element is missing, fail gracefully (no throw) and return early.
+        return;
+      }
+
+      if(!hasSolution){ extraEl.style.display='none'; clearHighlights(); return; }
       const examples = findExtraPlacementsExample();
-      if(examples.length === 0){ extraIndicatorEl.style.display='none'; clearHighlights(); return; }
-      extraIndicatorEl.style.display='block';
-      extraHeaderEl.textContent = `Additional placements possible: ${examples.length} oriented shape${examples.length>1?'s':''} (excluding monomino)`;
-      extraListEl.innerHTML = '';
+      if(examples.length === 0){ extraEl.style.display='none'; clearHighlights(); return; }
+      extraEl.style.display='block';
+      headerEl.textContent = `Additional placements possible: ${examples.length} oriented shape${examples.length>1?'s':''} (excluding monomino)`;
+      listEl.innerHTML = '';
       for(const ex of examples){
         const item = document.createElement('div'); item.className='extra-item';
         const mini = document.createElement('div'); mini.className='mini';
@@ -826,32 +898,93 @@ document.addEventListener('DOMContentLoaded', () => {
           addInstance(s.id, s.size, s.baseName);
           renderSelectedList();
           updateExtraIndicator();
-          // Do NOT re-run the solver automatically.
         });
         item.addEventListener('mouseenter', ()=> highlightPlacement(ex.placement));
         item.addEventListener('mouseleave', ()=> clearHighlights());
         item.appendChild(mini); item.appendChild(idSpan); item.appendChild(plusBtn);
-        extraListEl.appendChild(item);
+        listEl.appendChild(item);
       }
     }
 
+    /* --- Info panel placement logic ---
+       Use projected measurement to detect overlap with category cards.
+    */
+    function rectsIntersect(a, b){
+      return !(b.left >= a.right || b.right <= a.left || b.top >= a.bottom || b.bottom <= a.top);
+    }
+
+    function adjustInfoPanelPosition(){
+      // Ensure infoPanel is back in topRow temporarily so we can measure positions consistently.
+      const topRow = document.querySelector('.topRow');
+      if(!topRow.contains(infoPanelEl)){
+        topRow.appendChild(infoPanelEl);
+      }
+
+      // Clear layout classes to get natural size
+      infoPanelEl.classList.remove('stretched','column');
+      infoPanelEl.classList.add('row');
+
+      // Measure grid and info panel natural width
+      const gridRect = gridEl.getBoundingClientRect();
+      const infoWidth = infoPanelEl.offsetWidth;
+      const projectedInfoRight = gridRect.right + 14 /* gap */ + infoWidth;
+
+      // Check each category card bounding rect: if projectedInfoRight would overlap any card rect, we consider overlap.
+      const cards = document.querySelectorAll('.category-card');
+      let overlap = false;
+      cards.forEach(card => {
+        const cRect = card.getBoundingClientRect();
+        const projectedInfoRect = {
+          left: gridRect.right + 14,
+          right: projectedInfoRight,
+          top: gridRect.top,
+          bottom: gridRect.bottom
+        };
+        if(rectsIntersect(projectedInfoRect, cRect)){
+          overlap = true;
+        }
+      });
+
+      if(overlap){
+        // Move info panel below palette and stretch
+        infoPanelEl.classList.remove('row');
+        infoPanelEl.classList.add('column','stretched');
+        if(paletteWrapEl && paletteWrapEl.parentNode){
+          paletteWrapEl.parentNode.insertBefore(infoPanelEl, paletteWrapEl.nextSibling);
+        }
+      } else {
+        if(!topRow.contains(infoPanelEl)){
+          topRow.appendChild(infoPanelEl);
+        }
+        infoPanelEl.classList.remove('stretched','column');
+        infoPanelEl.classList.add('row');
+      }
+
+      // Ensure extra indicator element refs are current after potential moves
+      ensureExtraElements();
+    }
+
+    /* --- Controls wiring --- */
     document.getElementById('solveBtn').addEventListener('click', ()=>{
       placementsEl.innerHTML = 'Optimizing...';
       setTimeout(()=> { runSolveOptimize(); }, 50);
     });
-
     document.getElementById('resetGrid').addEventListener('click', ()=>{
       clearSolution();
       applyDefaultCenter();
       renderGrid();
       renderSelectedList();
       updateExtraIndicator();
+      setTimeout(adjustInfoPanelPosition, 30);
     });
-
     document.getElementById('clearAll').addEventListener('click', ()=>{
       clearAllSelections();
+      setTimeout(adjustInfoPanelPosition, 30);
     });
 
+    window.addEventListener('resize', ()=> { setTimeout(adjustInfoPanelPosition, 30); });
+
+    /* --- clearSolution and clearAllSelections --- */
     function clearSolution(){ placedCells = {}; hasSolution = false; renderGrid(); updateExtraIndicator(); clearIncludedList(); }
     function clearAllSelections(){
       selectedInstances = [];
@@ -861,8 +994,10 @@ document.addEventListener('DOMContentLoaded', () => {
       placementsEl.innerHTML = '';
       updateScoreboard({ set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, 0, 0);
       clearIncludedList();
+      setTimeout(adjustInfoPanelPosition, 30);
     }
 
+    /* --- Initialization --- */
     applyDefaultCenter();
     buildShapeTypes();
     renderPalette();
@@ -871,6 +1006,9 @@ document.addEventListener('DOMContentLoaded', () => {
     updateScoreboard({ set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, 0, 0);
     clearIncludedList();
     updateExtraIndicator();
+
+    // initial placement adjustment
+    setTimeout(adjustInfoPanelPosition, 50);
 
   } catch (err) {
     console.error('Initialization failed:', err);
