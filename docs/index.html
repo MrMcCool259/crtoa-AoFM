@@ -26,13 +26,13 @@
   button{background:#2563eb;color:white;border:none;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px}
   button.secondary{background:#1f2937;color:var(--accent);border:1px solid rgba(255,255,255,0.03);padding:6px 8px}
   .grid{display:grid;grid-template-columns:repeat(7,46px);grid-auto-rows:46px;gap:6px;margin-bottom:8px;justify-content:center}
-  .cell{width:46px;height:46px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-size:13px;font-weight:700}
+  .cell{width:46px;height:46px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-size:13px;font-weight:700;position:relative;overflow:hidden}
   .cell.locked{background:#233045;border:1px solid #0f1724;color:#6b7280}
   .cell.unlocked{background:#dbeafe;color:#022c3a;box-shadow:inset 0 -3px 6px rgba(0,0,0,0.06)}
   .cell.placed{color:#022c3a}
-  .placed-red{background:linear-gradient(135deg,#fca5a5,#fecaca)}
-  .placed-green{background:linear-gradient(135deg,#86efac,#bbf7d0)}
-  .placed-blue{background:linear-gradient(135deg,#93c5fd,#bfdbfe)}
+  .placed-red{background:linear-gradient(135deg,#fca5a5,#fecaca); color:#3a0a0a}
+  .placed-green{background:linear-gradient(135deg,#86efac,#bbf7d0); color:#03210a}
+  .placed-blue{background:linear-gradient(135deg,#93c5fd,#bfdbfe); color:#021029}
   .outline-rare { box-shadow: inset 0 0 0 3px var(--rare); }
   .outline-epic { box-shadow: inset 0 0 0 3px var(--epic); }
   .outline-super { box-shadow: inset 0 0 0 3px var(--super); }
@@ -55,8 +55,11 @@
   .count input{width:40px;font-size:12px;padding:4px;border-radius:6px;border:1px solid #213244;background:#071021;color:var(--accent);text-align:center;height:28px}
   .selected-area{margin-top:8px;padding:8px;border-radius:8px;background:linear-gradient(180deg,#07101a,#071421);border:1px solid rgba(255,255,255,0.03)}
   .selected-title{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--accent);font-weight:700}
+  .selected-sets{display:flex;gap:8px}
+  .selected-set{flex:1;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);min-height:80px;display:flex;flex-direction:column;gap:8px}
+  .selected-set-header{display:flex;align-items:center;justify-content:space-between;font-weight:700;color:var(--muted);font-size:13px}
   .selected-list{display:flex;gap:6px;flex-wrap:wrap}
-  .selected-item{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);cursor:pointer;user-select:none;font-size:13px}
+  .selected-item{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;cursor:pointer;user-select:none;font-size:13px}
   .selected-item.rare { background: var(--rare); color: #021029; }
   .selected-item.epic { background: var(--epic); color: #fff; }
   .selected-item.super { background: var(--super); color: #fff; }
@@ -66,8 +69,12 @@
   .selected-count{font-weight:700;padding-left:6px;margin-left:6px;border-left:1px solid rgba(255,255,255,0.03)}
   .included-area{margin-top:8px;padding:8px;border-radius:8px;background:linear-gradient(180deg,#06111a,#061216);border:1px solid rgba(255,255,255,0.02)}
   .included-title{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--accent);font-weight:700}
-  .included-list{display:flex;gap:6px;flex-wrap:wrap}
-  .included-item{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px}
+  .included-sets{display:flex;gap:8px}
+  .included-set{flex:1;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);min-height:80px;display:flex;flex-direction:column;gap:8px}
+  .included-item{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;font-size:13px}
+  .included-item.rare { background: var(--rare); color: #021029; }
+  .included-item.epic { background: var(--epic); color: #fff; }
+  .included-item.super { background: var(--super); color: #fff; }
   .extra-indicator { margin-top:8px; padding:8px; border-radius:6px; background: linear-gradient(180deg,#071421,#061219); border:1px solid rgba(255,255,255,0.03); color:#cfe8ff; font-size:13px; }
   .extra-list { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
   .extra-item { display:flex; gap:6px; align-items:center; padding:6px; border-radius:6px; background: rgba(255,255,255,0.02); }
@@ -76,6 +83,7 @@
   .scoreboard th, .scoreboard td { border:1px solid rgba(255,255,255,0.04); padding:6px 8px; text-align:center; }
   .scoreboard .colheader { font-weight:700; }
   .placements{margin-top:8px;font-size:13px;color:var(--accent);max-height:180px;overflow:auto}
+  .droppable-over { outline: 2px dashed rgba(255,255,255,0.12); }
   @media (max-width:980px){
     .wrap{flex-direction:column;padding:6px}
     .board{max-width:100%}
@@ -104,18 +112,35 @@
     <div class="selected-area">
       <div class="selected-title">
         <span style="width:10px;height:10px;border-radius:50%;background:var(--rare);display:inline-block;"></span>
-        <div>Shards selected <span style="color:#9fb6d4;font-weight:400;margin-left:8px;font-size:12px">(left-click to cycle rarity, right-click to delete)</span></div>
+        <div>Shapes selected <span style="color:#9fb6d4;font-weight:400;margin-left:8px;font-size:12px">(left-click to cycle rarity, right-click to delete, drag between sets)</span></div>
       </div>
 
-      <div id="selectedList" class="selected-list"></div>
+      <div class="selected-sets">
+        <div class="selected-set" id="set1" data-set="1">
+          <div class="selected-set-header"><div>Set 1 (default)</div><div id="set1Count" style="color:#9fb6d4;font-weight:700">0</div></div>
+          <div id="selectedListSet1" class="selected-list" ondragover="event.preventDefault()"></div>
+        </div>
+        <div class="selected-set" id="set2" data-set="2">
+          <div class="selected-set-header"><div>Set 2</div><div id="set2Count" style="color:#9fb6d4;font-weight:700">0</div></div>
+          <div id="selectedListSet2" class="selected-list" ondragover="event.preventDefault()"></div>
+        </div>
+      </div>
 
-      <!-- NEW: Shapes included in the current solution -->
       <div class="included-area" id="includedArea">
         <div class="included-title">
           <span style="width:10px;height:10px;border-radius:50%;background:#9fb6d4;display:inline-block;"></span>
-          <div>Shards included in the current solution</div>
+          <div>Shapes included in the current solution (per set)</div>
         </div>
-        <div id="includedList" class="included-list"></div>
+        <div class="included-sets">
+          <div class="included-set" id="includedSet1">
+            <div style="font-weight:700;color:var(--muted);display:flex;justify-content:space-between"><div>Set 1</div><div id="includedSet1Tiles" style="color:#9fb6d4">Tiles: 0</div></div>
+            <div id="includedListSet1" class="included-list"></div>
+          </div>
+          <div class="included-set" id="includedSet2">
+            <div style="font-weight:700;color:var(--muted);display:flex;justify-content:space-between"><div>Set 2</div><div id="includedSet2Tiles" style="color:#9fb6d4">Tiles: 0</div></div>
+            <div id="includedListSet2" class="included-list"></div>
+          </div>
+        </div>
       </div>
 
       <div id="extraIndicator" class="extra-indicator" style="display:none;">
@@ -133,10 +158,13 @@
           </tr>
         </thead>
         <tbody>
-          <tr><td>Tiles</td><td id="sb_tiles_rare">0</td><td id="sb_tiles_epic">0</td><td id="sb_tiles_super">0</td></tr>
-          <tr><td>Rift Resistance</td><td id="sb_rr_rare">0</td><td id="sb_rr_epic">0</td><td id="sb_rr_super">0</td></tr>
-          <tr><td>Set Bonus</td><td id="sb_set_rare">0</td><td id="sb_set_epic">0</td><td id="sb_set_super">0</td></tr>
-          <!-- "Total" row removed per request -->
+          <tr><td>Tiles (Set 1)</td><td id="sb_tiles1_rare">0</td><td id="sb_tiles1_epic">0</td><td id="sb_tiles1_super">0</td></tr>
+          <tr><td>Rift Resistance (Set 1)</td><td id="sb_rr1_rare">0</td><td id="sb_rr1_epic">0</td><td id="sb_rr1_super">0</td></tr>
+          <tr><td>Set Bonus (Set 1)</td><td id="sb_set1_rare">0</td><td id="sb_set1_epic">0</td><td id="sb_set1_super">0</td></tr>
+
+          <tr><td>Tiles (Set 2)</td><td id="sb_tiles2_rare">0</td><td id="sb_tiles2_epic">0</td><td id="sb_tiles2_super">0</td></tr>
+          <tr><td>Rift Resistance (Set 2)</td><td id="sb_rr2_rare">0</td><td id="sb_rr2_epic">0</td><td id="sb_rr2_super">0</td></tr>
+          <tr><td>Set Bonus (Set 2)</td><td id="sb_set2_rare">0</td><td id="sb_set2_epic">0</td><td id="sb_set2_super">0</td></tr>
         </tbody>
       </table>
 
@@ -164,7 +192,6 @@
 </div>
 
 <script>
-/* Wrap initialization in DOMContentLoaded and add error logging to avoid silent failures */
 window.addEventListener('error', (ev) => {
   console.error('Runtime error:', ev.error || ev.message, ev);
 });
@@ -174,19 +201,18 @@ window.addEventListener('unhandledrejection', (ev) => {
 
 document.addEventListener('DOMContentLoaded', () => {
   try {
-    /* --- Config / state --- */
     const ROWS = 7, COLS = 7;
-    // Unlimited selections allowed
-    const MAX_PIECES = Infinity;
     const RARITY_ORDER = ['rare','epic','super'];
     const RARITY_VALUES = { rare: 30, epic: 60, super: 120 };
+    const SET1_21_PRIORITY = 100000;
+    const DUAL_SET_PRIORITY = 500;
+
     let unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
-    let shapeTypes = []; // oriented types (S#)
-    let selectedInstances = []; // list of { iid, shapeId, rarity, size, baseName }
-    let placedCells = {}; // map "r,c" -> { pid, iid, rarity, colorClass }
+    let shapeTypes = [];
+    let selectedInstances = []; // each: { iid, shapeId, rarity, size, baseName, set }
+    let placedCells = {}; // "r,c" -> { pid, iid, rarity, set, colorClass }
     let hasSolution = false;
 
-    /* --- Geometry helpers --- */
     function normalize(cells){
       if(!cells.length) return [];
       const minr = Math.min(...cells.map(p=>p[0]));
@@ -212,7 +238,6 @@ document.addEventListener('DOMContentLoaded', () => {
       return unique;
     }
 
-    /* --- Base shapes --- */
     const baseShapes = [
       {name:"monomino", cells:[[0,0]]},
       {name:"domino", cells:[[0,0],[0,1]]},
@@ -241,19 +266,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    /* --- DOM refs --- */
     const gridEl = document.getElementById('grid');
     const colA = document.getElementById('colA');
     const colB = document.getElementById('colB');
     const colC = document.getElementById('colC');
-    const selectedListEl = document.getElementById('selectedList');
-    const includedListEl = document.getElementById('includedList');
+    const selectedListSet1El = document.getElementById('selectedListSet1');
+    const selectedListSet2El = document.getElementById('selectedListSet2');
+    const includedListSet1El = document.getElementById('includedListSet1');
+    const includedListSet2El = document.getElementById('includedListSet2');
+    const includedSet1TilesEl = document.getElementById('includedSet1Tiles');
+    const includedSet2TilesEl = document.getElementById('includedSet2Tiles');
     const placementsEl = document.getElementById('placements');
     const extraIndicatorEl = document.getElementById('extraIndicator');
     const extraHeaderEl = document.getElementById('extraHeader');
     const extraListEl = document.getElementById('extraList');
+    const set1CountEl = document.getElementById('set1Count');
+    const set2CountEl = document.getElementById('set2Count');
 
-    /* --- Default unlocked grid --- */
     function applyDefaultCenter(){
       unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
       const startR = Math.floor((ROWS-3)/2);
@@ -265,7 +294,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    /* --- Render grid --- */
     function renderGrid(){
       gridEl.innerHTML = '';
       for(let r=0;r<ROWS;r++){
@@ -278,16 +306,17 @@ document.addEventListener('DOMContentLoaded', () => {
           else cls += (unlocked[r][c] ? 'unlocked' : 'locked');
           div.className = cls;
           if(placed){
-            div.classList.add(placed.colorClass);
+            if(placed.colorClass) div.classList.add(placed.colorClass);
             if(placed.rarity === 'rare') div.classList.add('outline-rare');
             else if(placed.rarity === 'epic') div.classList.add('outline-epic');
             else if(placed.rarity === 'super') div.classList.add('outline-super');
+            div.dataset.rarity = placed.rarity;
             div.textContent = placed.pid;
           } else {
             div.textContent = '';
           }
           div.dataset.rc = k;
-          div.title = placed ? `Placed ${placed.pid}` : (unlocked[r][c] ? 'Unlocked' : 'Locked');
+          div.title = placed ? `Placed ${placed.pid} (set ${placed.set})` : (unlocked[r][c] ? 'Unlocked' : 'Locked');
           div.addEventListener('click', ()=> {
             if(hasSolution) clearSolution();
             unlocked[r][c] = !unlocked[r][c];
@@ -299,7 +328,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    /* --- Palette --- */
     function renderPalette(){
       colA.innerHTML=''; colB.innerHTML=''; colC.innerHTML='';
       const cats={ small:[], four:[], five:[], other:[] };
@@ -363,11 +391,10 @@ document.addEventListener('DOMContentLoaded', () => {
       } else colC.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
     }
 
-    /* --- Selected instances management --- */
     let nextInstanceId = 1;
     function addInstance(shapeId, size, baseName){
       const iid = 'I' + (nextInstanceId++);
-      selectedInstances.push({ iid, shapeId, rarity:'rare', size, baseName });
+      selectedInstances.push({ iid, shapeId, rarity:'rare', size, baseName, set:1 });
     }
     function removeOneInstanceOfShape(shapeId){
       for(let i=selectedInstances.length-1;i>=0;i--){
@@ -390,15 +417,42 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
     function countInstancesOfShape(shapeId){ return selectedInstances.filter(s=>s.shapeId===shapeId).length; }
-    function totalSelectedInstances(){ return selectedInstances.length; }
 
-    /* --- Render selected list (per-instance) --- */
+    function onDragStart(ev, iid){
+      ev.dataTransfer.setData('text/plain', iid);
+      ev.dataTransfer.effectAllowed = 'move';
+    }
+    function onDropToSet(ev, setNum){
+      ev.preventDefault();
+      const iid = ev.dataTransfer.getData('text/plain');
+      const inst = selectedInstances.find(x=>x.iid===iid);
+      if(inst){
+        inst.set = setNum;
+        renderSelectedList();
+        // Do NOT re-run or update the current solution automatically.
+      }
+    }
+
     function renderSelectedList(){
-      selectedListEl.innerHTML = '';
-      if(selectedInstances.length === 0){ selectedListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>'; return; }
-      for(const inst of selectedInstances){
+      selectedListSet1El.innerHTML = '';
+      selectedListSet2El.innerHTML = '';
+      if(selectedInstances.length === 0){
+        selectedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
+        selectedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
+        set1CountEl.textContent = '0';
+        set2CountEl.textContent = '0';
+        return;
+      }
+      const set1 = selectedInstances.filter(s=>s.set === 1);
+      const set2 = selectedInstances.filter(s=>s.set === 2);
+      set1CountEl.textContent = set1.length;
+      set2CountEl.textContent = set2.length;
+
+      function createItem(inst){
         const item = document.createElement('div');
         item.className = 'selected-item ' + inst.rarity;
+        item.draggable = true;
+        item.dataset.iid = inst.iid;
         const mini = document.createElement('div'); mini.className='selected-mini';
         const st = shapeTypes.find(s=>s.id===inst.shapeId);
         const cells = st ? st.cells : [[0,0]];
@@ -409,28 +463,43 @@ document.addEventListener('DOMContentLoaded', () => {
             mini.appendChild(mc);
           }
         }
-        const idDiv = document.createElement('div'); idDiv.style.color = (inst.rarity==='rare' ? '#021029' : '#fff'); idDiv.style.fontWeight='700';
+        const idDiv = document.createElement('div'); idDiv.style.fontWeight='700';
         idDiv.textContent = inst.iid;
         const cntEl = document.createElement('div'); cntEl.className='selected-count'; cntEl.textContent = inst.baseName ? inst.baseName : inst.shapeId;
         item.addEventListener('click', (ev)=>{
           ev.preventDefault();
           cycleRarityForInstance(inst.iid);
           renderSelectedList();
-          if(hasSolution){ runSolveOptimize(); }
+          // Do NOT re-run or update the current solution automatically.
         });
         item.addEventListener('contextmenu', (ev)=>{
           ev.preventDefault();
           const idx = selectedInstances.findIndex(x=>x.iid===inst.iid);
           if(idx>=0) selectedInstances.splice(idx,1);
           renderSelectedList();
-          if(hasSolution) runSolveOptimize();
+          // Do NOT re-run or update the current solution automatically.
           renderPalette();
           updateExtraIndicator();
         });
 
+        item.addEventListener('dragstart', (ev)=> onDragStart(ev, inst.iid));
         item.appendChild(mini); item.appendChild(idDiv); item.appendChild(cntEl);
-        selectedListEl.appendChild(item);
+        return item;
       }
+
+      set1.forEach(inst => selectedListSet1El.appendChild(createItem(inst)));
+      set2.forEach(inst => selectedListSet2El.appendChild(createItem(inst)));
+
+      const set1El = document.getElementById('set1');
+      const set2El = document.getElementById('set2');
+      set1El.ondragover = (ev)=>{ ev.preventDefault(); set1El.classList.add('droppable-over'); };
+      set1El.ondragleave = ()=> set1El.classList.remove('droppable-over');
+      set1El.ondrop = (ev)=>{ set1El.classList.remove('droppable-over'); onDropToSet(ev,1); };
+
+      set2El.ondragover = (ev)=>{ ev.preventDefault(); set2El.classList.add('droppable-over'); };
+      set2El.ondragleave = ()=> set2El.classList.remove('droppable-over');
+      set2El.ondrop = (ev)=>{ set2El.classList.remove('droppable-over'); onDropToSet(ev,2); };
+
       updatePaletteInputs();
     }
 
@@ -454,18 +523,26 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    /* --- Render included list (new) --- */
     function renderIncludedList(placements){
-      includedListEl.innerHTML = '';
+      includedListSet1El.innerHTML = '';
+      includedListSet2El.innerHTML = '';
       if(!placements || placements.length === 0){
-        includedListEl.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
+        includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
+        includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
+        includedSet1TilesEl.textContent = 'Tiles: 0';
+        includedSet2TilesEl.textContent = 'Tiles: 0';
         return;
       }
-      // placements: array of { iid, shapeId, rarity, placement }
-      placements.forEach((p, idx) => {
-        const item = document.createElement('div'); item.className = 'included-item';
-        const mini = document.createElement('div'); mini.className = 'selected-mini';
-        // show small preview using the shape type
+      const pSet1 = placements.filter(p=>p.set === 1);
+      const pSet2 = placements.filter(p=>p.set === 2);
+      const tiles1 = pSet1.reduce((s,p)=>s + (p.placement.cells ? p.placement.cells.length : 0), 0);
+      const tiles2 = pSet2.reduce((s,p)=>s + (p.placement.cells ? p.placement.cells.length : 0), 0);
+      includedSet1TilesEl.textContent = `Tiles: ${tiles1}`;
+      includedSet2TilesEl.textContent = `Tiles: ${tiles2}`;
+
+      function makeIncludedItem(p, idx){
+        const item = document.createElement('div'); item.className = 'included-item ' + p.rarity;
+        const mini = document.createElement('div'); mini.className='selected-mini';
         const st = shapeTypes.find(s=>s.id===p.shapeId);
         const cells = st ? st.cells : [[0,0]];
         for(let rr=0; rr<3; rr++){
@@ -477,15 +554,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         const txt = document.createElement('div');
         txt.style.color = '#cfe8ff';
-        txt.textContent = `${p.pid || ('P'+(idx+1))} • ${p.iid} • ${p.shapeId} • ${p.rarity}`;
+        txt.textContent = `${p.pid || ('P'+(idx+1))} • ${p.iid} • ${p.shapeId} • ${p.rarity} • tiles ${p.placement.cells.length}`;
         item.appendChild(mini); item.appendChild(txt);
-        includedListEl.appendChild(item);
-      });
+        return item;
+      }
+
+      pSet1.forEach((p, i)=> includedListSet1El.appendChild(makeIncludedItem(p, i)));
+      pSet2.forEach((p, i)=> includedListSet2El.appendChild(makeIncludedItem(p, i)));
     }
 
-    function clearIncludedList(){ includedListEl.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; }
+    function clearIncludedList(){ includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedSet1TilesEl.textContent = 'Tiles: 0'; includedSet2TilesEl.textContent = 'Tiles: 0'; }
 
-    /* --- Placements generation --- */
     function generatePlacementsForShapeType(shape){
       const cells = shape.cells;
       const maxR = Math.max(...cells.map(p=>p[0]));
@@ -505,23 +584,11 @@ document.addEventListener('DOMContentLoaded', () => {
       return placements;
     }
 
-    /* --- Optimization solver --- */
     function computeSetBonus(sumTiles){
       if(sumTiles < 9) return 0;
       const increments = Math.floor((sumTiles - 9) / 3);
       const capped = Math.min(increments, 4);
       return 265 * (capped + 1);
-    }
-
-    function scoreFromTiles(tilesByRarity){
-      const rrRare = tilesByRarity.rare * RARITY_VALUES.rare;
-      const rrEpic = tilesByRarity.epic * RARITY_VALUES.epic;
-      const rrSuper = tilesByRarity.super * RARITY_VALUES.super;
-      const rrSum = rrRare + rrEpic + rrSuper;
-      const sumTiles = tilesByRarity.rare + tilesByRarity.epic + tilesByRarity.super;
-      const setBonus = computeSetBonus(sumTiles);
-      const total = rrSum + setBonus;
-      return { rrRare, rrEpic, rrSuper, rrSum, setBonus, total, sumTiles };
     }
 
     function runSolveOptimize(timeoutMs = 3500){
@@ -538,6 +605,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const opts = st ? generatePlacementsForShapeType(st) : [];
         placementsByInstance.push(opts);
       }
+
+      for(let i=0;i<instances.length;i++){
+        const inst = instances[i];
+        if(inst.rarity === 'super' && (placementsByInstance[i].length === 0)){
+          showInvalidSelection('One or more Super Epic pieces have no valid placement on the current unlocked grid. Super Epics must be included.');
+          clearIncludedList();
+          return;
+        }
+      }
+
       const anyPlacement = placementsByInstance.some(arr=>arr.length>0);
       if(!anyPlacement){
         showInvalidSelection('No valid placement exists for any selected piece on the current unlocked grid.');
@@ -550,17 +627,43 @@ document.addEventListener('DOMContentLoaded', () => {
       const indexMap = order.map(o=>o.idx);
 
       const used = new Set();
-      let best = { total: -1, tilesByRarity: {rare:0,epic:0,super:0}, placements: [] };
+      let best = { total: -1, tilesByRarityBySet: { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, placements: [] };
       const startTime = Date.now();
 
       function placeAdds(placement){ return placement.cells.map(([r,c])=>`${r},${c}`); }
 
-      function backtrack(pos, curTilesByRarity, chosenPlacements){
+      function backtrack(pos, curTilesByRarityBySet, chosenPlacements){
         if(Date.now() - startTime > timeoutMs) return;
         if(pos >= indexMap.length){
-          const sc = scoreFromTiles(curTilesByRarity);
-          if(sc.total > best.total){
-            best = { total: sc.total, tilesByRarity: {...curTilesByRarity}, placements: chosenPlacements.slice() };
+          const rrRare = curTilesByRarityBySet.set1.rare * RARITY_VALUES.rare + curTilesByRarityBySet.set2.rare * RARITY_VALUES.rare;
+          const rrEpic = curTilesByRarityBySet.set1.epic * RARITY_VALUES.epic + curTilesByRarityBySet.set2.epic * RARITY_VALUES.epic;
+          const rrSuper = curTilesByRarityBySet.set1.super * RARITY_VALUES.super + curTilesByRarityBySet.set2.super * RARITY_VALUES.super;
+          const rrSum = rrRare + rrEpic + rrSuper;
+
+          const total1 = curTilesByRarityBySet.set1.rare + curTilesByRarityBySet.set1.epic + curTilesByRarityBySet.set1.super;
+          const total2 = curTilesByRarityBySet.set2.rare + curTilesByRarityBySet.set2.epic + curTilesByRarityBySet.set2.super;
+
+          const overflow = Math.max(0, total1 - 21);
+          const set1ForBonus = Math.min(total1, 21);
+          const set2ForBonus = total2 + overflow;
+
+          const setBonus1 = computeSetBonus(set1ForBonus);
+          const setBonus2 = computeSetBonus(set2ForBonus);
+
+          const set1Priority = (set1ForBonus >= 21) ? SET1_21_PRIORITY : 0;
+          const dualBonus = (setBonus1 > 0 && setBonus2 > 0) ? DUAL_SET_PRIORITY : 0;
+
+          const total = rrSum + setBonus1 + setBonus2 + set1Priority + dualBonus;
+
+          if(total > best.total){
+            best = {
+              total,
+              rrRare, rrEpic, rrSuper, rrSum,
+              setBonus1, setBonus2,
+              tilesByRarityBySet: JSON.parse(JSON.stringify(curTilesByRarityBySet)),
+              placements: chosenPlacements.slice(),
+              set1Priority, dualBonus
+            };
           }
           return;
         }
@@ -574,17 +677,20 @@ document.addEventListener('DOMContentLoaded', () => {
           for(const k of keys) if(used.has(k)){ conflict = true; break; }
           if(conflict) continue;
           for(const k of keys) used.add(k);
-          curTilesByRarity[inst.rarity] += inst.size;
-          chosenPlacements.push({ iid: inst.iid, shapeId: inst.shapeId, rarity: inst.rarity, placement: p });
-          backtrack(pos+1, curTilesByRarity, chosenPlacements);
+          const targetSet = inst.set === 2 ? 'set2' : 'set1';
+          curTilesByRarityBySet[targetSet][inst.rarity] += inst.size;
+          chosenPlacements.push({ iid: inst.iid, shapeId: inst.shapeId, rarity: inst.rarity, placement: p, set: inst.set });
+          backtrack(pos+1, curTilesByRarityBySet, chosenPlacements);
           chosenPlacements.pop();
-          curTilesByRarity[inst.rarity] -= inst.size;
+          curTilesByRarityBySet[targetSet][inst.rarity] -= inst.size;
           for(const k of keys) used.delete(k);
         }
-        backtrack(pos+1, curTilesByRarity, chosenPlacements);
+        if(inst.rarity !== 'super'){
+          backtrack(pos+1, curTilesByRarityBySet, chosenPlacements);
+        }
       }
 
-      backtrack(0, {rare:0, epic:0, super:0}, []);
+      backtrack(0, { set1: {rare:0, epic:0, super:0}, set2: {rare:0, epic:0, super:0} }, []);
 
       if(best.total < 0 || best.placements.length === 0){
         showInvalidSelection('No valid tiling found for your selected shapes on the current unlocked area.');
@@ -597,16 +703,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const p = best.placements[i];
         const pid = 'P'+(i+1);
         for(const [r,c] of p.placement.cells){
-          placedCells[`${r},${c}`] = { pid, iid: p.iid, rarity: p.rarity, colorClass: sizeToColorClass(p.placement.cells.length) };
+          placedCells[`${r},${c}`] = { pid, iid: p.iid, rarity: p.rarity, set: p.set, colorClass: sizeToColorClass(p.placement.cells.length) };
         }
       }
-      updateScoreboard(best.tilesByRarity);
+
+      updateScoreboard(best.tilesByRarityBySet, best.setBonus1 || 0, best.setBonus2 || 0);
       hasSolution = true;
       renderGrid();
       placementsEl.innerHTML = '';
-      placementsEl.appendChild(document.createTextNode(`Best Total: ${best.total} (Set Bonus ${computeSetBonus(best.tilesByRarity.rare + best.tilesByRarity.epic + best.tilesByRarity.super)})`));
-      // Render included list from the chosen placements
-      // Enhance each placement with pid to display
+      const displayTotal = (best.rrSum || 0) + (best.setBonus1 || 0) + (best.setBonus2 || 0);
+      placementsEl.appendChild(document.createTextNode(`Best Total: ${displayTotal}`));
       const enriched = best.placements.map((p, i) => ({ ...p, pid: 'P' + (i+1) }));
       renderIncludedList(enriched);
       updateExtraIndicator();
@@ -619,21 +725,37 @@ document.addEventListener('DOMContentLoaded', () => {
       return 'placed-blue';
     }
 
-    /* scoreboard update */
-    function updateScoreboard(tilesByRarity){
-      const rrRare = tilesByRarity.rare * RARITY_VALUES.rare;
-      const rrEpic = tilesByRarity.epic * RARITY_VALUES.epic;
-      const rrSuper = tilesByRarity.super * RARITY_VALUES.super;
-      const setBonus = computeSetBonus(tilesByRarity.rare + tilesByRarity.epic + tilesByRarity.super);
-      document.getElementById('sb_tiles_rare').textContent = tilesByRarity.rare;
-      document.getElementById('sb_tiles_epic').textContent = tilesByRarity.epic;
-      document.getElementById('sb_tiles_super').textContent = tilesByRarity.super;
-      document.getElementById('sb_rr_rare').textContent = rrRare;
-      document.getElementById('sb_rr_epic').textContent = rrEpic;
-      document.getElementById('sb_rr_super').textContent = rrSuper;
-      document.getElementById('sb_set_rare').textContent = setBonus;
-      document.getElementById('sb_set_epic').textContent = setBonus;
-      document.getElementById('sb_set_super').textContent = setBonus;
+    function updateScoreboard(tilesByRarityBySet, setBonus1=0, setBonus2=0){
+      const t1 = tilesByRarityBySet.set1;
+      const t2 = tilesByRarityBySet.set2;
+
+      const rr1_rare = t1.rare * RARITY_VALUES.rare;
+      const rr1_epic = t1.epic * RARITY_VALUES.epic;
+      const rr1_super = t1.super * RARITY_VALUES.super;
+
+      const rr2_rare = t2.rare * RARITY_VALUES.rare;
+      const rr2_epic = t2.epic * RARITY_VALUES.epic;
+      const rr2_super = t2.super * RARITY_VALUES.super;
+
+      document.getElementById('sb_tiles1_rare').textContent = t1.rare;
+      document.getElementById('sb_tiles1_epic').textContent = t1.epic;
+      document.getElementById('sb_tiles1_super').textContent = t1.super;
+      document.getElementById('sb_rr1_rare').textContent = rr1_rare;
+      document.getElementById('sb_rr1_epic').textContent = rr1_epic;
+      document.getElementById('sb_rr1_super').textContent = rr1_super;
+      document.getElementById('sb_set1_rare').textContent = setBonus1;
+      document.getElementById('sb_set1_epic').textContent = setBonus1;
+      document.getElementById('sb_set1_super').textContent = setBonus1;
+
+      document.getElementById('sb_tiles2_rare').textContent = t2.rare;
+      document.getElementById('sb_tiles2_epic').textContent = t2.epic;
+      document.getElementById('sb_tiles2_super').textContent = t2.super;
+      document.getElementById('sb_rr2_rare').textContent = rr2_rare;
+      document.getElementById('sb_rr2_epic').textContent = rr2_epic;
+      document.getElementById('sb_rr2_super').textContent = rr2_super;
+      document.getElementById('sb_set2_rare').textContent = setBonus2;
+      document.getElementById('sb_set2_epic').textContent = setBonus2;
+      document.getElementById('sb_set2_super').textContent = setBonus2;
     }
 
     function showInvalidSelection(err){
@@ -642,7 +764,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <div style="color:#9fb6d4;margin-top:6px">${err || 'Please adjust your selected shapes and try again.'}</div>`;
     }
 
-    /* Extra indicator helpers */
     function getUncoveredUnlockedSet(){
       const set = new Set();
       for(let r=0;r<ROWS;r++){
@@ -704,7 +825,8 @@ document.addEventListener('DOMContentLoaded', () => {
         plusBtn.addEventListener('click', ()=>{
           addInstance(s.id, s.size, s.baseName);
           renderSelectedList();
-          if(hasSolution){ runSolveOptimize(); }
+          updateExtraIndicator();
+          // Do NOT re-run the solver automatically.
         });
         item.addEventListener('mouseenter', ()=> highlightPlacement(ex.placement));
         item.addEventListener('mouseleave', ()=> clearHighlights());
@@ -713,7 +835,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
 
-    /* Controls wiring */
     document.getElementById('solveBtn').addEventListener('click', ()=>{
       placementsEl.innerHTML = 'Optimizing...';
       setTimeout(()=> { runSolveOptimize(); }, 50);
@@ -731,7 +852,6 @@ document.addEventListener('DOMContentLoaded', () => {
       clearAllSelections();
     });
 
-    /* clearSolution and clearAllSelections */
     function clearSolution(){ placedCells = {}; hasSolution = false; renderGrid(); updateExtraIndicator(); clearIncludedList(); }
     function clearAllSelections(){
       selectedInstances = [];
@@ -739,17 +859,16 @@ document.addEventListener('DOMContentLoaded', () => {
       renderSelectedList();
       clearSolution();
       placementsEl.innerHTML = '';
-      updateScoreboard({rare:0,epic:0,super:0});
+      updateScoreboard({ set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, 0, 0);
       clearIncludedList();
     }
 
-    /* --- Initialization --- */
     applyDefaultCenter();
     buildShapeTypes();
     renderPalette();
     renderGrid();
     renderSelectedList();
-    updateScoreboard({rare:0,epic:0,super:0});
+    updateScoreboard({ set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, 0, 0);
     clearIncludedList();
     updateExtraIndicator();
 
