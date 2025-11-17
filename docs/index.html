@@ -5,85 +5,127 @@
 <title>CR:TOA Altar of Forgotten Memories Solver</title>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <style>
-  body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background: #0f1724; color: #e6eef8; padding: 18px; }
-  h1 { margin: 0 0 10px 0; font-size: 18px; }
-  .container { display:flex; gap:18px; align-items:flex-start; }
-  .board { background: linear-gradient(180deg,#111827,#0b1220); padding:12px; border-radius:10px; box-shadow: 0 6px 18px rgba(0,0,0,0.6); }
-  .grid { display:grid; grid-template-columns: repeat(7,34px); grid-auto-rows:34px; gap:4px; }
-  .cell { width:34px; height:34px; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; user-select:none; font-size:12px; font-weight:700; transition: background .12s; }
-  .cell.locked { background:#233045; border:1px solid #0f1724; color:#6b7280; }
-  .cell.unlocked { background:#dbeafe; color:#022c3a; box-shadow: inset 0 -4px 8px rgba(0,0,0,0.06); }
-  .cell.placed { color:#022c3a; }
-  .placed-red { background: linear-gradient(135deg,#fca5a5,#fecaca); }
-  .placed-green { background: linear-gradient(135deg,#86efac,#bbf7d0); }
-  .placed-blue { background: linear-gradient(135deg,#93c5fd,#bfdbfe); }
+  :root{
+    --bg:#0f1724;
+    --panel:#071021;
+    --muted:#9fb6d4;
+    --accent:#cfe8ff;
+    --card:#0b1220;
+    --card-border: rgba(255,255,255,0.04);
+  }
+  html,body{height:100%;width:100%;margin:0;padding:10px;background:var(--bg);color:var(--accent);font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial;box-sizing:border-box;}
+  *{box-sizing:inherit}
+  h1{margin:0 0 10px 0;font-size:16px}
+  .wrap{display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap}
+  /* Board */
+  .board{background:linear-gradient(180deg,#111827,#0b1220);padding:10px;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,0.6);min-width:300px;max-width:340px}
+  .controls-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+  button{background:#2563eb;color:white;border:none;padding:7px 10px;border-radius:8px;cursor:pointer;font-size:13px}
+  button.secondary{background:#1f2937;color:var(--accent);border:1px solid rgba(255,255,255,0.03);padding:6px 8px}
+  /* Larger grid cells */
+  .grid{display:grid;grid-template-columns:repeat(7,44px);grid-auto-rows:44px;gap:6px;margin-bottom:8px;justify-content:center}
+  .cell{width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;cursor:pointer;user-select:none;font-size:13px;font-weight:700}
+  .cell.locked{background:#233045;border:1px solid #0f1724;color:#6b7280}
+  .cell.unlocked{background:#dbeafe;color:#022c3a;box-shadow:inset 0 -3px 6px rgba(0,0,0,0.06)}
+  .cell.placed{color:#022c3a}
+  .placed-red{background:linear-gradient(135deg,#fca5a5,#fecaca)}
+  .placed-green{background:linear-gradient(135deg,#86efac,#bbf7d0)}
+  .placed-blue{background:linear-gradient(135deg,#93c5fd,#bfdbfe)}
 
-  .controls { width:520px; }
-  .palette { background: linear-gradient(180deg,#0b1220,#071021); padding:10px; border-radius:8px; max-height:640px; overflow:auto; }
-  .category { margin-bottom:12px; padding-bottom:8px; border-bottom:1px solid rgba(255,255,255,0.03); }
-  .category-title { font-weight:700; margin-bottom:8px; display:flex; align-items:center; gap:8px; color:#cfe8ff; }
-  .color-dot { width:12px; height:12px; border-radius:50%; display:inline-block; }
-  .color-red { background: linear-gradient(180deg,#f87171,#fecaca); box-shadow: inset 0 -2px rgba(0,0,0,0.08); }
-  .color-green { background: linear-gradient(180deg,#4ade80,#bbf7d0); box-shadow: inset 0 -2px rgba(0,0,0,0.08); }
-  .color-blue { background: linear-gradient(180deg,#60a5fa,#bfdbfe); box-shadow: inset 0 -2px rgba(0,0,0,0.08); }
+  /* Compact palette layout, but each category in its own card */
+  .palette-wrap{display:flex;gap:10px;align-items:flex-start;flex:1;min-width:360px;max-width:760px}
+  .category-card{background:linear-gradient(180deg,var(--card),#061018);border-radius:8px;padding:8px;border:1px solid var(--card-border);flex:1;display:flex;flex-direction:column;min-width:110px;max-height:520px;overflow:hidden}
+  .category-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-weight:700;color:var(--accent);font-size:13px}
+  .category-body{overflow:auto;padding-right:6px;flex:1}
+  .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+  .dot.red{background:linear-gradient(180deg,#f87171,#fecaca);box-shadow:inset 0 -2px rgba(0,0,0,0.08)}
+  .dot.green{background:linear-gradient(180deg,#4ade80,#bbf7d0);box-shadow:inset 0 -2px rgba(0,0,0,0.08)}
+  .dot.blue{background:linear-gradient(180deg,#60a5fa,#bfdbfe);box-shadow:inset 0 -2px rgba(0,0,0,0.08)}
 
-  .shape-row { display:flex; gap:10px; align-items:center; margin-bottom:8px; padding:4px 2px; border-radius:6px; }
-  .shape-row:hover { background: rgba(255,255,255,0.02); }
-  .mini { display:grid; grid-template-columns:repeat(4,14px); grid-auto-rows:14px; gap:2px; background:transparent; }
-  .mini .mcell { width:14px; height:14px; background: rgba(255,255,255,0.04); border-radius:2px; }
-  .mini .mcell.on { background: linear-gradient(180deg,#bae6fd,#60a5fa); }
-  .shape-id { width:46px; font-size:12px; color:#9fb6d4; }
-  .count { display:flex; align-items:center; gap:6px; margin-left:auto; }
-  .count input { width:44px; font-size:12px; padding:4px; border-radius:6px; border:1px solid #213244; background:#071021; color:#cfe8ff; text-align:center; }
-  button { background:#2563eb; color:white; border:none; padding:8px 12px; border-radius:8px; cursor:pointer; }
-  button.secondary { background:#1f2937; color:#cfe8ff; border:1px solid #233045; }
-  .footer { margin-top:10px; display:flex; gap:10px; align-items:center; }
-  .placements { margin-top:8px; font-size:13px; color:#cfe8ff; max-height:220px; overflow:auto; }
-  .placement-row { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
-  .placement-dot { width:14px; height:14px; border-radius:3px; display:inline-block; }
-  .note { margin-top:10px; color:#9fb6d4; font-size:13px; }
-  .topbar { display:flex; gap:12px; align-items:center; margin-bottom:8px; }
-  .small { font-size:12px; color:#9fb6d4; }
+  /* shape row compact: mini, id, count (no names) */
+  .shape-row{display:flex;gap:8px;align-items:center;margin-bottom:6px;padding:4px 2px;border-radius:6px}
+  .shape-row:hover{background:rgba(255,255,255,0.02)}
+  .mini{display:grid;grid-template-columns:repeat(3,12px);grid-auto-rows:12px;gap:2px}
+  .mini .mcell{width:12px;height:12px;background:rgba(255,255,255,0.04);border-radius:2px}
+  .mini .mcell.on{background:linear-gradient(180deg,#bae6fd,#60a5fa)}
+  .shape-id{width:36px;font-size:12px;color:var(--muted);text-align:left}
+  .count{display:flex;align-items:center;gap:6px;margin-left:auto}
+  .count input{width:40px;font-size:12px;padding:4px;border-radius:6px;border:1px solid #213244;background:#071021;color:var(--accent);text-align:center;height:28px}
+
+  /* Selected list under the grid, compact */
+  .selected-area{margin-top:8px;padding:8px;border-radius:8px;background:linear-gradient(180deg,#07101a,#071421);border:1px solid rgba(255,255,255,0.03)}
+  .selected-title{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--accent);font-weight:700}
+  .selected-list{display:flex;gap:6px;flex-wrap:wrap}
+  .selected-item{display:flex;gap:8px;align-items:center;padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);cursor:pointer;user-select:none;font-size:13px}
+  .selected-mini{width:36px;height:36px;display:grid;grid-template-columns:repeat(3,10px);grid-auto-rows:10px;gap:2px}
+  .selected-mini .mcell{width:10px;height:10px;background:rgba(255,255,255,0.04);border-radius:2px}
+  .selected-mini .mcell.on{background:linear-gradient(180deg,#bae6fd,#60a5fa)}
+  .selected-count{font-weight:700;color:var(--accent);padding-left:6px;margin-left:6px;border-left:1px solid rgba(255,255,255,0.03)}
+
+  /* placements list */
+  .placements{margin-top:8px;font-size:13px;color:var(--accent);max-height:180px;overflow:auto}
+
+  @media (max-width:980px){
+    .wrap{flex-direction:column;padding:6px}
+    .board{max-width:100%}
+    .palette-wrap{width:100%;flex-direction:column}
+    .category-card{max-height:220px}
+    .grid{grid-template-columns:repeat(7,calc((100% - 6*6px)/7));grid-auto-rows:calc((100% - 6*6px)/7)}
+  }
 </style>
 </head>
 <body>
 <h1>CR:TOA Altar of Forgotten Memories Solver</h1>
-<div class="container">
+<div class="wrap">
   <div class="board">
-    <div style="display:flex; gap:10px; align-items:center; margin-bottom:8px;">
-      <div class="topbar">
-        <button id="resetGrid" class="secondary">Reset default unlocked 3x5</button>
-        <button id="clearSolution" class="secondary">Clear solution</button>
+    <div class="controls-top">
+      <div style="color:#9fb6d4;font-size:12px">Click cells to toggle locked/unlocked</div>
+      <div style="display:flex;gap:8px">
+        <button id="solveBtn">Solve</button>
+        <button id="resetGrid" class="secondary">Reset</button>
+        <button id="clearSolution" class="secondary">Clear</button>
       </div>
     </div>
-    <div id="grid" class="grid" title="Click to toggle unlocked/locked"></div>
-    <div class="note">Click cells to toggle locked/unlocked. Unlocked cells are pale. Locked are dark. Placed pieces are colored by tile-count category.</div>
+
+    <div id="grid" class="grid"></div>
+
+    <div class="selected-area" id="selectedArea">
+      <div class="selected-title">
+        <span class="dot red"></span>
+        <div>Selected shapes <span style="color:#9fb6d4;font-weight:400;margin-left:8px;font-size:12px">(click to remove one instance)</span></div>
+      </div>
+      <div id="selectedList" class="selected-list"></div>
+    </div>
+
+    <div class="placements" id="placements"></div>
   </div>
 
-  <div class="controls">
-    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-      <div style="font-weight:700">Shape palette (grouped by tile count)</div>
-      <div><button id="solveBtn">Solve</button></div>
+  <div class="palette-wrap" id="paletteWrap">
+    <div class="category-card" id="cardSmall">
+      <div class="category-head"><span class="dot red"></span><div style="margin-left:6px">1–3 tiles</div></div>
+      <div class="category-body" id="colA"></div>
     </div>
-    <div class="palette" id="palette"></div>
 
-    <div class="footer">
-      <div style="flex:1">
-        <div style="font-weight:700">Placements / Solution</div>
-        <div class="placements" id="placements"></div>
-      </div>
+    <div class="category-card" id="card4">
+      <div class="category-head"><span class="dot green"></span><div style="margin-left:6px">4 tiles</div></div>
+      <div class="category-body" id="colB"></div>
     </div>
-    <div class="note">Colors: 1–3 tiles = red, 4 tiles = green, 5 tiles = blue. Rotations/reflections that look identical are deduplicated.</div>
+
+    <div class="category-card" id="card5">
+      <div class="category-head"><span class="dot blue"></span><div style="margin-left:6px">5 tiles</div></div>
+      <div class="category-body" id="colC"></div>
+    </div>
   </div>
 </div>
 
 <script>
-/* Client-side preview with the transcribed shapes from the picture.
-   Applied modifications:
-     - Tetromino S removed.
-     - Pentominoes F, N, P, W, Y removed.
-     - Pentomino I and L removed (per latest request).
-     - Z pentomino uses 3x3 layout: XX. / .X. / .XX
+/* Compact preview JS updated:
+   - Reverted layout to compact iteration
+   - Increased grid cell size to 44px for a larger board
+   - Each category sits in its own separate card
+   - New behavior: when clicking a selected-shape to delete:
+       * if a solution is NOT present, the shape is deleted (count decremented) only (no solver run)
+       * if a solution IS present, the shape is deleted and the solver is re-run to update the solution
 */
 
 const ROWS = 7, COLS = 7;
@@ -91,8 +133,14 @@ let unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false
 let placedCells = {};
 let shapeTypes = [];
 let shapeCounts = {};
+const MAX_PIECES = 15;
 
-function applyDefaultCenter(){ unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
+// track whether a solution is currently visualized
+let hasSolution = false;
+
+/* default center 3x5 unlocked */
+function applyDefaultCenter(){
+  unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
   const startR = Math.floor((ROWS-3)/2);
   const startC = Math.floor((COLS-5)/2);
   for(let r=startR; r<startR+3; r++){
@@ -102,20 +150,17 @@ function applyDefaultCenter(){ unlocked = Array.from({length:ROWS}, ()=>Array.fr
   }
 }
 
+/* geometry helpers */
 function normalize(cells){
   if(cells.length===0) return [];
-  let minr = Math.min(...cells.map(p=>p[0]));
-  let minc = Math.min(...cells.map(p=>p[1]));
+  const minr = Math.min(...cells.map(p=>p[0]));
+  const minc = Math.min(...cells.map(p=>p[1]));
   const out = cells.map(p=>[p[0]-minr, p[1]-minc]);
   out.sort((a,b)=>a[0]-b[0] || a[1]-b[1]);
   return out;
 }
-function rotate90(cells){
-  return normalize(cells.map(([r,c])=>[c, -r]));
-}
-function reflectX(cells){
-  return normalize(cells.map(([r,c])=>[-r, c]));
-}
+function rotate90(cells){ return normalize(cells.map(([r,c])=>[c,-r])); }
+function reflectX(cells){ return normalize(cells.map(([r,c])=>[-r,c])); }
 function all8_unique(cells){
   const t0 = normalize(cells);
   const raw = [];
@@ -127,30 +172,21 @@ function all8_unique(cells){
   const unique = [];
   for(const t of raw){
     const key = t.map(p=>p[0]+','+p[1]).join(';');
-    if(!seen.has(key)){
-      seen.add(key);
-      unique.push(t);
-    }
+    if(!seen.has(key)){ seen.add(key); unique.push(t); }
   }
   return unique;
 }
 
-/* Transcribed base shapes after requested removals (I and L pentomino removed) */
+/* base shapes (transcribed + pruned per earlier requests) */
 const baseShapes = [
-  // 1~3 tiles
   {name:"monomino", cells:[[0,0]]},
   {name:"domino", cells:[[0,0],[0,1]]},
   {name:"tromino-I", cells:[[0,0],[0,1],[0,2]]},
   {name:"tromino-L", cells:[[0,0],[0,1],[1,0]]},
-
-  // 4 tiles (tetrominoes) - S removed
   {name:"tetromino-I", cells:[[0,0],[0,1],[0,2],[0,3]]},
   {name:"tetromino-O", cells:[[0,0],[0,1],[1,0],[1,1]]},
   {name:"tetromino-T", cells:[[0,1],[1,0],[1,1],[1,2]]},
   {name:"tetromino-L", cells:[[0,0],[1,0],[2,0],[2,1]]},
-
-  // 5 tiles (pentominoes) - I and L removed, others removed earlier
-  // Remaining pentominoes included here: T, U, V, X, Z
   {name:"pentomino-T", cells:[[0,0],[0,1],[0,2],[1,1],[2,1]]},
   {name:"pentomino-U", cells:[[0,0],[0,2],[1,0],[1,1],[1,2]]},
   {name:"pentomino-V", cells:[[0,0],[1,0],[2,0],[2,1],[2,2]]},
@@ -164,17 +200,18 @@ function buildShapeTypes(){
   for(const b of baseShapes){
     const transforms = all8_unique(b.cells);
     for(const t of transforms){
-      const s = { id: "S"+sid, cells: t, baseName: b.name, size: t.length };
-      shapeTypes.push(s);
+      shapeTypes.push({ id: "S"+sid, cells: t, baseName: b.name, size: t.length });
       sid++;
     }
   }
 }
 
-/* UI rendering & solver (same as before) */
-
+/* rendering and UI wiring */
 const gridEl = document.getElementById('grid');
-const paletteEl = document.getElementById('palette');
+const colA = document.getElementById('colA');
+const colB = document.getElementById('colB');
+const colC = document.getElementById('colC');
+const selectedListEl = document.getElementById('selectedList');
 const placementsEl = document.getElementById('placements');
 
 function renderGrid(){
@@ -184,18 +221,16 @@ function renderGrid(){
       const div = document.createElement('div');
       const k = r+','+c;
       const placed = placedCells[k];
-      let className = 'cell ';
-      if(placed) {
-        className += 'placed ' + placed.colorClass;
-      } else {
-        className += (unlocked[r][c] ? 'unlocked' : 'locked');
-      }
-      div.className = className;
+      let cls = 'cell ';
+      if(placed) cls += 'placed ' + placed.colorClass;
+      else cls += (unlocked[r][c] ? 'unlocked' : 'locked');
+      div.className = cls;
       div.dataset.rc = k;
       div.title = placed ? `Placed ${placed.pid}` : (unlocked[r][c] ? 'Unlocked' : 'Locked');
       div.textContent = placed ? placed.pid : '';
       div.addEventListener('click', ()=>{
-        if(Object.keys(placedCells).length) clearSolution();
+        // clear only if there's currently a solution visualized
+        if(hasSolution) clearSolution();
         unlocked[r][c] = !unlocked[r][c];
         renderGrid();
       });
@@ -205,29 +240,21 @@ function renderGrid(){
 }
 
 function renderPalette(){
-  paletteEl.innerHTML = '';
-
-  const categories = {
-    '1-3': { title: '1–3 tiles', colorClass: 'color-red', cssClass: 'placed-red', items: [] },
-    '4':   { title: '4 tiles', colorClass: 'color-green', cssClass: 'placed-green', items: [] },
-    '5':   { title: '5 tiles', colorClass: 'color-blue', cssClass: 'placed-blue', items: [] },
-    'other': { title: 'other', colorClass: 'color-blue', cssClass: 'placed-blue', items: [] }
-  };
+  colA.innerHTML = ''; colB.innerHTML = ''; colC.innerHTML = '';
+  const cats = { small:[], four:[], five:[], other:[] };
   for(const s of shapeTypes){
-    if(s.size >=1 && s.size <=3) categories['1-3'].items.push(s);
-    else if(s.size ===4) categories['4'].items.push(s);
-    else if(s.size ===5) categories['5'].items.push(s);
-    else categories['other'].items.push(s);
+    if(s.size>=1 && s.size<=3) cats.small.push(s);
+    else if(s.size===4) cats.four.push(s);
+    else if(s.size===5) cats.five.push(s);
+    else cats.other.push(s);
   }
 
-  function makeShapeRow(s){
+  function makeRow(s){
     const row = document.createElement('div'); row.className='shape-row';
     const mini = document.createElement('div'); mini.className='mini';
-    const maxR = Math.max(...s.cells.map(p=>p[0]));
-    const maxC = Math.max(...s.cells.map(p=>p[1]));
-    const h = Math.max(1, Math.min(4, maxR+1));
-    const w = Math.max(1, Math.min(4, maxC+1));
-    mini.style.gridTemplateColumns = `repeat(${w},14px)`;
+    const maxR = Math.max(...s.cells.map(p=>p[0])); const maxC = Math.max(...s.cells.map(p=>p[1]));
+    const h = Math.max(1, Math.min(3, maxR+1)); const w = Math.max(1, Math.min(3, maxC+1));
+    mini.style.gridTemplateColumns = `repeat(${w},12px)`;
     for(let rr=0; rr<h; rr++){
       for(let cc=0; cc<w; cc++){
         const mc = document.createElement('div'); mc.className='mcell';
@@ -236,43 +263,42 @@ function renderPalette(){
       }
     }
     const idEl = document.createElement('div'); idEl.className='shape-id'; idEl.textContent = s.id;
-    const nameEl = document.createElement('div'); nameEl.style.color='#9fb6d4'; nameEl.style.fontSize='12px'; nameEl.textContent = s.baseName + ` (${s.size})`;
     const countWrap = document.createElement('div'); countWrap.className='count';
-    const minus = document.createElement('button'); minus.textContent='-'; minus.style.padding='4px 8px';
+    const minus = document.createElement('button'); minus.textContent='-'; minus.style.padding='3px 6px';
     const inp = document.createElement('input'); inp.type='number'; inp.min='0'; inp.value = shapeCounts[s.id]||0;
-    const plus = document.createElement('button'); plus.textContent='+'; plus.style.padding='4px 8px';
-    minus.addEventListener('click', ()=>{ inp.value = Math.max(0, parseInt(inp.value||0)-1); shapeCounts[s.id]=parseInt(inp.value||0); });
-    plus.addEventListener('click', ()=>{ inp.value = Math.min(15, parseInt(inp.value||0)+1); shapeCounts[s.id]=parseInt(inp.value||0); });
-    inp.addEventListener('change', ()=>{ let v=parseInt(inp.value||0); if(isNaN(v)||v<0) v=0; if(v>15) v=15; inp.value=v; shapeCounts[s.id]=v; });
-    countWrap.appendChild(minus); countWrap.appendChild(inp); countWrap.appendChild(plus);
+    const plus = document.createElement('button'); plus.textContent='+'; plus.style.padding='3px 6px';
 
-    row.appendChild(mini); row.appendChild(idEl); row.appendChild(nameEl); row.appendChild(countWrap);
+    minus.addEventListener('click', ()=>{
+      const cur = Math.max(0, parseInt(inp.value||0)-1);
+      inp.value = cur; shapeCounts[s.id]=cur; renderSelectedList();
+    });
+    plus.addEventListener('click', ()=>{
+      const total = totalSelectedPieces();
+      if(total >= MAX_PIECES){ alert('Maximum total pieces reached ('+MAX_PIECES+')'); return; }
+      const cur = Math.min(MAX_PIECES, parseInt(inp.value||0)+1);
+      inp.value = cur; shapeCounts[s.id]=cur; renderSelectedList();
+    });
+    inp.addEventListener('change', ()=>{
+      let v = parseInt(inp.value||0); if(isNaN(v)||v<0) v=0; if(v>MAX_PIECES) v=MAX_PIECES;
+      const existingTotalExcludingThis = totalSelectedPieces() - (shapeCounts[s.id] || 0);
+      if(existingTotalExcludingThis + v > MAX_PIECES) v = Math.max(0, MAX_PIECES - existingTotalExcludingThis);
+      inp.value=v; shapeCounts[s.id]=v; renderSelectedList();
+    });
+
+    countWrap.appendChild(minus); countWrap.appendChild(inp); countWrap.appendChild(plus);
+    row.appendChild(mini); row.appendChild(idEl); row.appendChild(countWrap);
     return row;
   }
 
-  const order = ['1-3','4','5','other'];
-  for(const key of order){
-    const cat = categories[key];
-    if(!cat) continue;
-    const catDiv = document.createElement('div'); catDiv.className='category';
-    const title = document.createElement('div'); title.className='category-title';
-    const dot = document.createElement('span'); dot.className='color-dot ' + cat.colorClass;
-    title.appendChild(dot);
-    const txt = document.createElement('div'); txt.textContent = `${cat.title} `;
-    txt.style.fontWeight='700';
-    txt.style.color='#cfe8ff';
-    title.appendChild(txt);
-    const small = document.createElement('div'); small.className='small'; small.textContent = `(${cat.items.length} oriented shapes)`;
-    title.appendChild(small);
-    catDiv.appendChild(title);
-
-    for(const s of cat.items){
-      catDiv.appendChild(makeShapeRow(s));
-    }
-    paletteEl.appendChild(catDiv);
-  }
+  if(cats.small.length) cats.small.forEach(s=>colA.appendChild(makeRow(s))); else colA.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
+  if(cats.four.length) cats.four.forEach(s=>colB.appendChild(makeRow(s))); else colB.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
+  if(cats.five.length || cats.other.length){
+    cats.five.forEach(s=>colC.appendChild(makeRow(s)));
+    cats.other.forEach(s=>colC.appendChild(makeRow(s)));
+  } else colC.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
 }
 
+/* placements generation & solver (backtracking) */
 function generatePlacementsFor(shape){
   const cells = shape.cells;
   const maxR = Math.max(...cells.map(p=>p[0]));
@@ -283,8 +309,8 @@ function generatePlacementsFor(shape){
       const abs = cells.map(([r,c])=>[r+ar, c+ac]);
       let ok = true;
       for(const [r,c] of abs){
-        if(r<0||r>=ROWS||c<0||c>=COLS) { ok=false; break; }
-        if(!unlocked[r][c]) { ok=false; break; }
+        if(r<0||r>=ROWS||c<0||c>=COLS){ ok=false; break; }
+        if(!unlocked[r][c]){ ok=false; break; }
       }
       if(ok) placements.push({shapeId: shape.id, anchor:[ar,ac], cells:abs});
     }
@@ -297,8 +323,7 @@ function buildPlacementsMap(){
   for(const s of shapeTypes){
     const cnt = shapeCounts[s.id] || 0;
     if(cnt<=0) continue;
-    const pls = generatePlacementsFor(s);
-    placementsByShape[s.id] = pls;
+    placementsByShape[s.id] = generatePlacementsFor(s);
   }
   return placementsByShape;
 }
@@ -308,44 +333,28 @@ function solveOnce(maxPieces=15){
   const placementsByShape = buildPlacementsMap();
   for(const s of shapeTypes){
     const cnt = shapeCounts[s.id] || 0;
-    for(let i=0;i<cnt;i++){
-      instances.push({instanceId: s.id + '#' + i, shapeId: s.id});
-    }
+    for(let i=0;i<cnt;i++) instances.push({instanceId: s.id+'#'+i, shapeId: s.id});
   }
-  if(instances.length===0) return {ok: true, placements: []};
+  if(instances.length===0) return {ok:true, placements:[]};
   if(instances.length > maxPieces) return {ok:false, error:'Total piece count exceeds max allowed.'};
-
-  const instanceOptions = instances.map(inst => {
-    const opts = placementsByShape[inst.shapeId] || [];
-    return {inst, opts};
-  });
-  for(const io of instanceOptions){
-    if(io.opts.length === 0) return {ok:false, error:'One or more requested piece types have no valid placements on current board.'};
-  }
+  const instanceOptions = instances.map(inst => ({inst, opts: placementsByShape[inst.shapeId] || []}));
+  for(const io of instanceOptions) if(io.opts.length===0) return {ok:false, error:'One or more requested piece types have no valid placements on current board.'};
   instanceOptions.sort((a,b)=>a.opts.length - b.opts.length);
 
-  const used = new Set();
-  const chosenPlacements = [];
-  let found = null;
-
+  const used = new Set(); const chosen = []; let found=null;
   function backtrack(idx){
     if(found) return;
-    if(idx >= instanceOptions.length){
-      found = chosenPlacements.slice();
-      return;
-    }
+    if(idx >= instanceOptions.length){ found = chosen.slice(); return; }
     const {inst, opts} = instanceOptions[idx];
     for(const p of opts){
-      let conflict = false;
-      for(const [r,c] of p.cells){
-        if(used.has(r+','+c)){ conflict = true; break; }
-      }
+      let conflict=false;
+      for(const [r,c] of p.cells) if(used.has(r+','+c)){ conflict=true; break; }
       if(conflict) continue;
       for(const [r,c] of p.cells) used.add(r+','+c);
-      chosenPlacements.push({instId:inst.instanceId, shapeId: p.shapeId, anchor:p.anchor, cells:p.cells});
+      chosen.push({instId:inst.instanceId, shapeId:p.shapeId, anchor:p.anchor, cells:p.cells});
       backtrack(idx+1);
       if(found) return;
-      chosenPlacements.pop();
+      chosen.pop();
       for(const [r,c] of p.cells) used.delete(r+','+c);
     }
   }
@@ -354,65 +363,127 @@ function solveOnce(maxPieces=15){
   return {ok:false, error:'No placement set found that fits all requested pieces.'};
 }
 
+/* visualization helpers */
 function sizeToCategory(size){
-  if(size >=1 && size <=3) return {name:"1–3 tiles", colorClass:"red", cssClass:"placed-red"};
-  if(size === 4) return {name:"4 tiles", colorClass:"green", cssClass:"placed-green"};
-  if(size === 5) return {name:"5 tiles", colorClass:"blue", cssClass:"placed-blue"};
-  return {name: size + " tiles", colorClass:"blue", cssClass:"placed-blue"};
+  if(size>=1 && size<=3) return {cssClass:'placed-red', color:'red'};
+  if(size===4) return {cssClass:'placed-green', color:'green'};
+  if(size===5) return {cssClass:'placed-blue', color:'blue'};
+  return {cssClass:'placed-blue', color:'blue'};
 }
 
 function visualizeSolution(sol){
   placedCells = {};
   for(let i=0;i<sol.length;i++){
-    const pl = sol[i];
-    const pid = 'P'+(i+1);
+    const pl = sol[i]; const pid = 'P'+(i+1);
     const shape = shapeTypes.find(s=>s.id===pl.shapeId);
     const cat = sizeToCategory(shape ? shape.size : pl.cells.length);
-    for(const [r,c] of pl.cells){
-      placedCells[r+','+c] = { pid, colorClass: cat.cssClass };
-    }
+    for(const [r,c] of pl.cells) placedCells[r+','+c] = { pid, colorClass: cat.cssClass };
   }
+  // mark that a solution is present
+  hasSolution = true;
   renderGrid();
   placementsEl.innerHTML = '';
   sol.forEach((pl,i)=>{
     const shape = shapeTypes.find(s=>s.id===pl.shapeId);
     const cat = sizeToCategory(shape ? shape.size : pl.cells.length);
     const div = document.createElement('div'); div.className='placement-row';
-    const dot = document.createElement('span'); dot.className='placement-dot';
-    dot.style.background = (cat.colorClass === 'red' ? 'linear-gradient(180deg,#f87171,#fecaca)' : (cat.colorClass === 'green' ? 'linear-gradient(180deg,#4ade80,#bbf7d0)' : 'linear-gradient(180deg,#60a5fa,#bfdbfe)')); dot.style.width='14px'; dot.style.height='14px';
-    const txt = document.createElement('div'); txt.textContent = `${'P'+(i+1)}: ${pl.instId} (shape ${pl.shapeId}, size ${shape ? shape.size : pl.cells.length}) anchor=${pl.anchor}`;
-    div.appendChild(dot); div.appendChild(txt);
-    placementsEl.appendChild(div);
+    const dot = document.createElement('span'); dot.className='dot '+cat.color; dot.style.width='12px'; dot.style.height='12px'; dot.style.display='inline-block'; dot.style.marginRight='8px';
+    const txt = document.createElement('div'); txt.textContent = `${'P'+(i+1)}: ${pl.instId} anchor=${pl.anchor}`; txt.style.display='inline-block';
+    div.appendChild(dot); div.appendChild(txt); placementsEl.appendChild(div);
   });
 }
 
-function clearSolution(){
-  placedCells = {};
-  placementsEl.innerHTML = '';
-  renderGrid();
+function clearSolution(){ placedCells = {}; placementsEl.innerHTML=''; hasSolution = false; renderGrid(); }
+
+/* selected list */
+function totalSelectedPieces(){ let sum=0; for(const k in shapeCounts) sum += (shapeCounts[k]||0); return sum; }
+
+function renderSelectedList(){
+  selectedListEl.innerHTML = '';
+  const pairs = [];
+  for(const s of shapeTypes){
+    const cnt = shapeCounts[s.id] || 0;
+    if(cnt > 0) pairs.push({shape:s, count:cnt});
+  }
+  if(pairs.length === 0){ selectedListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>'; return; }
+  pairs.forEach(p=>{
+    const item = document.createElement('div'); item.className='selected-item';
+    const mini = document.createElement('div'); mini.className='selected-mini';
+    for(let rr=0; rr<3; rr++){
+      for(let cc=0; cc<3; cc++){
+        const mc = document.createElement('div'); mc.className='mcell';
+        if(p.shape.cells.some(q=>q[0]===rr && q[1]===cc)) mc.classList.add('on');
+        mini.appendChild(mc);
+      }
+    }
+    const idDiv = document.createElement('div'); idDiv.style.color='#cfe8ff'; idDiv.style.fontSize='13px'; idDiv.textContent = p.shape.id;
+    const cntEl = document.createElement('div'); cntEl.className='selected-count'; cntEl.textContent = '×' + p.count;
+    item.appendChild(mini); item.appendChild(idDiv); item.appendChild(cntEl);
+
+    // New behavior: deletion only re-runs solver if a solution is currently shown (hasSolution)
+    item.addEventListener('click', ()=>{
+      const prev = shapeCounts[p.shape.id] || 0; if(prev <= 0) return;
+      shapeCounts[p.shape.id] = Math.max(0, prev - 1);
+
+      // update palette input if present
+      const inputs = document.querySelectorAll('.category-body input[type="number"]');
+      for(const inp of inputs){
+        const row = inp.closest('.shape-row'); if(!row) continue;
+        const idEl = row.querySelector('.shape-id'); if(!idEl) continue;
+        if(idEl.textContent === p.shape.id){ inp.value = shapeCounts[p.shape.id]; break; }
+      }
+
+      // Always update the selected-list view
+      renderSelectedList();
+
+      if(hasSolution){
+        // a solution was present: remove this shape and re-run solver to update the visualization
+        const res = solveOnce(MAX_PIECES);
+        if(res.ok){
+          if(res.placements.length === 0){
+            // no placements (maybe nothing selected) -> clear visualization
+            clearSolution();
+            placementsEl.innerHTML = 'No pieces selected (trivial).';
+          } else {
+            visualizeSolution(res.placements);
+          }
+        } else {
+          // no solution after deletion -> clear visualization and show message
+          clearSolution();
+          placementsEl.innerHTML = 'No solution: ' + (res.error || 'unknown');
+        }
+      } else {
+        // No solution currently present: per request, do NOT run solver; only delete the shape
+        // Keep placements area untouched (it may contain previous messages) and do not change visualization
+      }
+    });
+
+    selectedListEl.appendChild(item);
+  });
 }
 
+/* hooks */
 document.getElementById('solveBtn').addEventListener('click', ()=>{
   placementsEl.innerHTML = 'Solving...';
   setTimeout(()=>{
-    const res = solveOnce(15);
+    const res = solveOnce(MAX_PIECES);
     if(res.ok){
-      visualizeSolution(res.placements);
-    } else {
-      placementsEl.innerHTML = 'No solution: ' + (res.error || 'unknown');
-      clearSolution();
-    }
+      if(res.placements.length===0){ placementsEl.innerHTML='No pieces selected.'; clearSolution(); }
+      else visualizeSolution(res.placements);
+    } else { placementsEl.innerHTML = 'No solution: ' + (res.error || 'unknown'); clearSolution(); }
   }, 50);
 });
-document.getElementById('resetGrid').addEventListener('click', ()=>{ clearSolution(); applyDefaultCenter(); renderGrid(); });
+document.getElementById('resetGrid').addEventListener('click', ()=>{ clearSolution(); applyDefaultCenter(); renderGrid(); renderSelectedList(); });
 document.getElementById('clearSolution').addEventListener('click', ()=>{ clearSolution(); });
 
-/* Initialize */
+/* init */
 applyDefaultCenter();
 buildShapeTypes();
 shapeTypes.forEach(s=> shapeCounts[s.id]=0);
 renderPalette();
 renderGrid();
+renderSelectedList();
+
 </script>
 </body>
 </html>
