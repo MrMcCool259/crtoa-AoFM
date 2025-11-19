@@ -14,6 +14,7 @@
     --rare:#2679F8;
     --epic:#D85FFF;
     --super:#F84747;
+    --unique:#FF9C00;
     --highlight: rgba(255,193,7,0.85);
   }
   html,body{height:100%;width:100%;margin:0;padding:10px;background:var(--bg);color:var(--accent);font-family:system-ui, -apple-system, "Segoe UI", Roboto, Arial;box-sizing:border-box;}
@@ -36,13 +37,34 @@
   .placed-red{background:linear-gradient(135deg,#fca5a5,#fecaca); color:#3a0a0a}
   .placed-green{background:linear-gradient(135deg,#86efac,#bbf7d0); color:#03210a}
   .placed-blue{background:linear-gradient(135deg,#93c5fd,#bfdbfe); color:#021029}
+  .placed-unique{background:linear-gradient(135deg,var(--unique), #ffb86b); color:#2b0f00}
   .outline-rare { box-shadow: inset 0 0 0 3px var(--rare); }
   .outline-epic { box-shadow: inset 0 0 0 3px var(--epic); }
   .outline-super { box-shadow: inset 0 0 0 3px var(--super); }
+  .outline-unique { box-shadow: inset 0 0 0 3px rgba(255,156,0,0.45); }
+
   .extra-highlight { outline: 3px solid var(--highlight); outline-offset: -3px; }
 
-  .palette-wrap{display:flex;gap:10px;align-items:flex-start;flex:1;min-width:360px;max-width:920px;flex-wrap:wrap}
-  .category-card{background:linear-gradient(180deg,var(--card),#061018);border-radius:8px;padding:8px;border:1px solid var(--card-border);flex:1;display:flex;flex-direction:column;min-width:130px;max-height:640px;overflow:hidden}
+  .palette-wrap{
+    display:grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap:10px;
+    align-items:start;
+    width:100%;
+  }
+
+  .category-card{
+    background:linear-gradient(180deg,var(--card),#061018);
+    border-radius:8px;
+    padding:8px;
+    border:1px solid var(--card-border);
+    display:flex;
+    flex-direction:column;
+    min-width:0;
+    max-height:640px;
+    overflow:hidden;
+  }
+
   .category-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-weight:700;color:var(--accent);font-size:13px}
   .category-body{overflow:auto;padding-right:6px;flex:1}
   .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
@@ -54,7 +76,51 @@
   .count{display:flex;align-items:center;gap:6px;margin-left:auto}
   .count input{width:40px;font-size:12px;padding:4px;border-radius:6px;border:1px solid #213244;background:#071021;color:var(--accent);text-align:center;height:28px}
 
-  /* compact selected/included UI */
+  .selected-mini{width:28px;height:28px;display:grid;grid-template-columns:repeat(3,8px);grid-auto-rows:8px;gap:2px;border-radius:4px;overflow:hidden}
+  .selected-mini .mcell{width:8px;height:8px;background:rgba(255,255,255,0.04);border-radius:1px}
+  .selected-mini .mcell.on{background:rgba(255,255,255,0.85)}
+
+  .selected-mini.unique{width:40px;height:40px;display:grid;grid-template-columns:repeat(5,8px);grid-auto-rows:8px;gap:2px;border-radius:4px;overflow:hidden}
+  .selected-mini.unique .mcell{width:8px;height:8px;background:rgba(255,255,255,0.04)}
+  .selected-mini.unique .mcell.on{background:rgba(255,255,255,0.95)}
+
+  .included-mini{width:28px;height:28px;display:grid;grid-template-columns:repeat(3,8px);grid-auto-rows:8px;gap:2px;border-radius:4px;overflow:hidden;align-items:center;justify-items:center}
+  .included-mini.rare{background:linear-gradient(180deg,#cfe8ff18,var(--rare));}
+  .included-mini.epic{background:linear-gradient(180deg,#f7d8ff18,var(--epic));}
+  .included-mini.super{background:linear-gradient(180deg,#ffd8d818,var(--super));}
+  .included-mini.unique{background:linear-gradient(180deg,rgba(255,156,0,0.12),var(--unique)); width:48px;height:48px;display:grid;grid-template-columns:repeat(5,8px);grid-auto-rows:8px;gap:2px;}
+  .included-mini .mcell{width:8px;height:8px;background:rgba(255,255,255,0.12);border-radius:1px}
+  .included-mini .mcell.on{background:rgba(255,255,255,0.95)}
+
+  .unique-mini{display:grid;grid-template-columns:repeat(5,12px);grid-auto-rows:12px;gap:2px;border-radius:3px;overflow:hidden;width:70px;height:70px}
+  .unique-mini .mcell{width:12px;height:12px;background:rgba(255,255,255,0.04);border-radius:2px}
+  .unique-mini .mcell.on{background:linear-gradient(180deg,var(--unique), #ffb86b);}
+
+  .unique-row{display:flex;gap:8px;align-items:center;margin-bottom:8px;padding:6px;border-radius:6px;background:rgba(255,156,0,0.06);border:1px solid rgba(255,156,0,0.06)}
+
+  #cardUnique .category-body { max-height:420px; overflow-y:auto; }
+  #cardUnique .category-body::-webkit-scrollbar { width:10px; }
+  #cardUnique .category-body::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); border-radius:6px; }
+  #cardUnique .category-body::-webkit-scrollbar-thumb { background: rgba(255,156,0,0.22); border-radius:6px; }
+  #cardUnique .category-body::-webkit-scrollbar-thumb:hover { background: rgba(255,156,0,0.32); }
+
+  /* Extra placements: rows with up to 4 items each */
+  .extra-indicator { margin-top:8px; padding:8px; border-radius:6px; background: linear-gradient(180deg,#071421,#061219); border:1px solid rgba(255,255,255,0.03); color:#cfe8ff; font-size:13px; }
+  .extra-list { display:flex; flex-direction:column; gap:8px; margin-top:8px; }
+  .extra-row { display:flex; gap:8px; }
+  .extra-item { display:flex; flex-direction:column; gap:6px; align-items:center; padding:8px; border-radius:6px; background: rgba(255,255,255,0.02); min-width:84px; }
+
+  .placements{margin-top:8px;font-size:13px;color:var(--accent);max-height:180px;overflow:auto}
+
+  #saveSlots { display:flex; flex-direction:column; gap:8px; }
+  .save-slot{display:flex;gap:8px;align-items:center;padding:6px;border-radius:6px;background:rgba(255,255,255,0.01)}
+  .save-mini{width:84px;height:84px;background:#071422;border-radius:6px;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;gap:1px;padding:2px}
+  .save-mini .s-cell{background:rgba(255,255,255,0.02);border-radius:2px}
+  .save-mini .s-cell.on{background:linear-gradient(180deg,#bae6fd,#60a5fa)}
+  .save-meta{flex:1;display:flex;flex-direction:column;gap:6px}
+  .save-controls{display:flex;gap:6px}
+  .save-input{width:100%;background:#071421;border:1px solid rgba(255,255,255,0.02);color:var(--accent);padding:4px;border-radius:6px}
+
   .panel-column{display:flex;flex-direction:column;gap:8px;min-width:140px}
   .selected-area{padding:8px;border-radius:8px;background:linear-gradient(180deg,#07101a,#071421);border:1px solid rgba(255,255,255,0.03)}
   .selected-title{display:flex;align-items:center;gap:8px;margin-bottom:6px;color:var(--accent);font-weight:700}
@@ -65,46 +131,24 @@
   .selected-item.rare { background: var(--rare); color: #021029; }
   .selected-item.epic { background: var(--epic); color: #fff; }
   .selected-item.super { background: var(--super); color: #fff; }
-
-  .selected-mini{Width:28px;height:28px;display:grid;grid-template-columns:repeat(3,8px);grid-auto-rows:8px;gap:2px;border-radius:4px;overflow:hidden}
-  .selected-mini .mcell{width:8px;height:8px;background:rgba(255,255,255,0.04);border-radius:1px}
-  .selected-mini .mcell.on{background:rgba(255,255,255,0.85)}
+  .selected-item.unique { background: linear-gradient(90deg,var(--unique),#ffb86b); color:#2b0f00; border:2px solid rgba(0,0,0,0.15); padding:6px; }
 
   .included-area{padding:8px;border-radius:8px;background:linear-gradient(180deg,#06111a,#061216);border:1px solid rgba(255,255,255,0.02)}
   .included-sets{display:flex;gap:8px}
   .included-set{flex:1;padding:8px;border-radius:8px;background:rgba(255,255,255,0.02);min-height:64px;display:flex;flex-direction:column;gap:6px}
   .included-list{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;align-items:center}
-  .included-item{display:flex;gap:8px;align-items:center;padding:4px;border-radius:6px;font-size:13px;flex:0 0 auto}
-  .included-mini{width:28px;height:28px;display:grid;grid-template-columns:repeat(3,8px);grid-auto-rows:8px;gap:2px;border-radius:4px;overflow:hidden;align-items:center;justify-items:center}
-  .included-mini.rare{background:linear-gradient(180deg,#cfe8ff18,var(--rare));}
-  .included-mini.epic{background:linear-gradient(180deg,#f7d8ff18,var(--epic));}
-  .included-mini.super{background:linear-gradient(180deg,#ffd8d818,var(--super));}
-  .included-mini .mcell{width:8px;height:8px;background:rgba(255,255,255,0.12);border-radius:1px}
-  .included-mini .mcell.on{background:rgba(255,255,255,0.95)}
+  .included-item{display:flex;flex-direction:row;gap:8px;align-items:center;padding:4px;border-radius:6px;font-size:13px;flex:0 0 auto}
 
   .scoreboard { width:100%; border-collapse:collapse; font-size:13px; color:var(--accent); margin-bottom:8px }
   .scoreboard th, .scoreboard td { border:1px solid rgba(255,255,255,0.04); padding:6px 8px; text-align:center; }
   .scoreboard .colheader { font-weight:700; }
 
-  .saves-area{padding:8px;border-radius:8px;background:linear-gradient(180deg,#061018,#050d12);border:1px solid rgba(255,255,255,0.02);min-width:220px}
-  .save-slot{display:flex;gap:8px;align-items:center;padding:6px;border-radius:6px;background:rgba(255,255,255,0.01)}
-  .save-mini{width:84px;height:84px;background:#071422;border-radius:6px;display:grid;grid-template-columns:repeat(7,1fr);grid-auto-rows:1fr;gap:1px;padding:2px}
-  .save-mini .s-cell{background:rgba(255,255,255,0.02);border-radius:2px}
-  .save-mini .s-cell.on{background:linear-gradient(180deg,#bae6fd,#60a5fa)}
-  .save-meta{flex:1;display:flex;flex-direction:column;gap:6px}
-  .save-controls{display:flex;gap:6px}
-  .save-input{width:100%;background:#071421;border:1px solid rgba(255,255,255,0.02);color:var(--accent);padding:4px;border-radius:6px}
-  .extra-indicator { margin-top:8px; padding:8px; border-radius:6px; background: linear-gradient(180deg,#071421,#061219); border:1px solid rgba(255,255,255,0.03); color:#cfe8ff; font-size:13px; }
-  .extra-list { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
-  .extra-item { display:flex; gap:6px; align-items:center; padding:6px; border-radius:6px; background: rgba(255,255,255,0.02); }
-  .placements{margin-top:8px;font-size:13px;color:var(--accent);max-height:180px;overflow:auto}
-
-  @media (max-width:980px){
-    .topRow{flex-direction:column}
-    .info-panel{width:100%}
-    .palette-wrap{width:100%;flex-direction:row;flex-wrap:wrap}
-    .category-card{max-width:48%}
-    .grid{grid-template-columns:repeat(7,calc((100% - 6*6px)/7));grid-auto-rows:calc((100% - 6*6px)/7)}
+  @media (max-width:1200px){
+    .palette-wrap{grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width:720px){
+    .palette-wrap{grid-template-columns: 1fr; }
+    .topRow{flex-direction:column;}
   }
 </style>
 </head>
@@ -150,15 +194,31 @@
             <div>Shapes selected <span style="color:#9fb6d4;font-weight:400;margin-left:8px;font-size:12px">(click mini -> cycle rarity, right-click to delete, drag between sets)</span></div>
           </div>
 
-          <div class="selected-sets">
-            <div class="selected-set" style="min-width:160px">
-              <div class="selected-set-header" style="display:flex;justify-content:space-between;align-items:center"><div>Set 1</div><div id="set1Count" style="color:#9fb6d4;font-weight:700">0</div></div>
-              <div id="set1" class="selected-list" ondragover="event.preventDefault()"></div>
+          <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <label style="font-size:13px;color:#9fb6d4;display:flex;align-items:center;gap:8px">
+                <input type="checkbox" id="includeUniqueToggle" /> Include a Unique shape
+              </label>
+              <div id="uniqueChosenIndicator" style="color:#9fb6d4;font-size:13px;margin-left:auto">None chosen</div>
             </div>
 
-            <div class="selected-set" style="min-width:160px">
-              <div class="selected-set-header" style="display:flex;justify-content:space-between;align-items:center"><div>Set 2</div><div id="set2Count" style="color:#9fb6d4;font-weight:700">0</div></div>
-              <div id="set2" class="selected-list" ondragover="event.preventDefault()"></div>
+            <div class="selected-sets">
+              <div class="selected-set" style="min-width:160px">
+                <div class="selected-set-header" style="display:flex;justify-content:space-between;align-items:center"><div>Set 1</div><div id="set1Count" style="color:#9fb6d4;font-weight:700">0</div></div>
+                <div id="set1" class="selected-list" ondragover="event.preventDefault()"></div>
+              </div>
+
+              <div class="selected-set" style="min-width:160px">
+                <div class="selected-set-header" style="display:flex;justify-content:space-between;align-items:center"><div>Set 2</div><div id="set2Count" style="color:#9fb6d4;font-weight:700">0</div></div>
+                <div id="set2" class="selected-list" ondragover="event.preventDefault()"></div>
+              </div>
+            </div>
+
+            <div id="uniqueSelectedContainer" style="margin-top:6px; display:none;">
+              <div style="font-weight:700;color:var(--muted);margin-bottom:6px">Unique (selected)</div>
+              <div class="selected-set" style="min-height:64px; background: rgba(255,156,0,0.02);">
+                <div id="uniqueSelectedBox" class="selected-list" style="min-height:48px;align-items:center"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -170,6 +230,7 @@
             <span style="width:10px;height:10px;border-radius:50%;background:#9fb6d4;display:inline-block;"></span>
             <div>Shapes included in the current solution</div>
           </div>
+
           <div class="included-sets">
             <div class="included-set">
               <div style="font-weight:700;color:var(--muted);display:flex;justify-content:space-between"><div>Set 1</div><div id="includedSet1Tiles" style="color:#9fb6d4">Tiles: 0</div></div>
@@ -181,11 +242,17 @@
             </div>
           </div>
 
+          <div id="includedUniqueContainer" style="margin-top:8px; display:none;">
+            <div style="font-weight:700;color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between"><div>Unique (selected)</div><div id="includedUniqueTiles" style="color:#9fb6d4">Tiles: 0</div></div>
+            <div class="included-set" style="margin-top:0; padding:8px; background: rgba(255,156,0,0.02);">
+              <div id="includedListUnique" class="included-list"></div>
+            </div>
+          </div>
+
           <div id="extraIndicator" class="extra-indicator" style="display:none;">
             <div id="extraHeader"></div>
             <div id="extraList" class="extra-list"></div>
           </div>
-
         </div>
       </div>
 
@@ -210,7 +277,6 @@
           </tbody>
         </table>
 
-        <!-- Dual Set Bonus dropdown -->
         <div style="margin-bottom:8px">
           <div style="font-weight:700;color:var(--muted);margin-bottom:6px">Dual Set Bonus</div>
           <select id="dualSetBonus" disabled style="width:100%;padding:6px;border-radius:6px;background:#071421;color:var(--accent);border:1px solid rgba(255,255,255,0.02)">
@@ -242,825 +308,1283 @@
       <div class="category-head"><span class="dot blue"></span><div style="margin-left:6px">5 tiles</div></div>
       <div class="category-body" id="colC"></div>
     </div>
+
+    <div class="category-card" id="cardUnique" style="display:none">
+      <div class="category-head"><span class="dot" style="background:var(--unique)"></span><div style="margin-left:6px">Unique (8 tiles) — choose 1</div></div>
+      <div class="category-body" id="colUnique"></div>
+    </div>
   </div>
 </div>
 
 <script>
-/* Safe single-file implementation.
-   Known: This file focuses on ensuring grid & palette always load and initializations run in correct order.
-   Changes: Added "Dual Set Bonus" dropdown which becomes active when unlocked tiles >= 24 and lists combinations
-            of per-set set-bonus thresholds (0,9,12,15,18,21) that fit into the unlocked tile count.
-            When a combination is selected, the solver forces final solutions to meet both set tile targets.
-   Additional changes requested by user:
-    - Saving a solution saves unlocked tiles and selected shapes + their rarities.
-    - Overwrite and Delete confirm before action.
-    - Reset removes shapes on grid AND clears "Shapes selected" and reverts grid to original default.
-    - Clear removes shapes on grid AND clears "Shapes selected" but keeps current unlocked grid.
+/* Final consolidated single-file app with requested fixes:
+   - Reset and Clear behavior fixed (Reset -> default unlocked center + clear selections & solution; Clear -> clear selections & solution but keep unlocked)
+   - Set 1 selected by default via setActiveSet(1)
+   - "Additional placements possible" rows limited to 4 shapes each
+   - Shape IDs removed from visible mini-previews in Shapes selected (kept as title on element)
+   - All previous robustness, save/load, Unique handling kept
 */
 
 const USER_KEY = 'hoangnh1630-rgb';
 const SAVES_KEY = `polyomino_saves_${USER_KEY}_v1`;
+const ROWS = 7, COLS = 7;
+const RARITY_VALUES = { rare: 30, epic: 60, super: 120, unique: 2000 };
+const SET_THRESHOLDS = [0,9,12,15,18,21];
 
-window.addEventListener('error', (ev) => { console.error('Runtime error:', ev.error || ev.message, ev); });
-window.addEventListener('unhandledrejection', (ev) => { console.error('Unhandled promise rejection:', ev.reason); });
+// App state
+window.unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
+window.shapeTypes = [];
+window.uniqueTypes = [];
+window.selectedInstances = [];
+window.placedCells = {};
+window.hasSolution = false;
+window.activeSet = 1;
+window.includeUnique = false;
+window.currentUniqueIid = null;
+window.nextInstanceId = 1;
 
-document.addEventListener('DOMContentLoaded', () => {
-  // State
-  const ROWS = 7, COLS = 7;
-  const RARITY_ORDER = ['rare','epic','super'];
-  const RARITY_VALUES = { rare: 30, epic: 60, super: 120 };
-  let unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
-  let shapeTypes = [];
-  let selectedInstances = [];
-  let placedCells = {};
-  let hasSolution = false;
-  let activeSet = 1;
+// DOM refs
+const gridEl = document.getElementById('grid');
+const colA = document.getElementById('colA');
+const colB = document.getElementById('colB');
+const colC = document.getElementById('colC');
+const colUnique = document.getElementById('colUnique');
+const set1ListEl = document.getElementById('set1');
+const set2ListEl = document.getElementById('set2');
+const uniqueSelectedBox = document.getElementById('uniqueSelectedBox');
+const uniqueSelectedContainer = document.getElementById('uniqueSelectedContainer');
+const includedListSet1El = document.getElementById('includedListSet1');
+const includedListSet2El = document.getElementById('includedListSet2');
+const includedListUniqueEl = document.getElementById('includedListUnique');
+const includedUniqueContainer = document.getElementById('includedUniqueContainer');
+const includedSet1TilesEl = document.getElementById('includedSet1Tiles');
+const includedSet2TilesEl = document.getElementById('includedSet2Tiles');
+const includedUniqueTilesEl = document.getElementById('includedUniqueTiles');
+const placementsEl = document.getElementById('placements');
+const extraIndicatorEl = document.getElementById('extraIndicator');
+const extraHeaderEl = document.getElementById('extraHeader');
+const extraListEl = document.getElementById('extraList');
+const set1CountEl = document.getElementById('set1Count');
+const set2CountEl = document.getElementById('set2Count');
+const unlockedCounterEl = document.getElementById('unlockedCounter');
+const selectSet1Btn = document.getElementById('selectSet1');
+const selectSet2Btn = document.getElementById('selectSet2');
+const saveSlotsContainer = document.getElementById('saveSlots');
+const dualSetSelect = document.getElementById('dualSetBonus');
+const dualSetHelp = document.getElementById('dualSetHelp');
+const includeUniqueToggle = document.getElementById('includeUniqueToggle');
+const cardUnique = document.getElementById('cardUnique');
+const uniqueChosenIndicator = document.getElementById('uniqueChosenIndicator');
 
-  // Dual set bonus thresholds (per-set tiles that produce set bonus)
-  const SET_THRESHOLDS = [0,9,12,15,18,21];
-
-  // DOM refs (guaranteed present)
-  const gridEl = document.getElementById('grid');
-  const colA = document.getElementById('colA');
-  const colB = document.getElementById('colB');
-  const colC = document.getElementById('colC');
-  const set1ListEl = document.getElementById('set1');
-  const set2ListEl = document.getElementById('set2');
-  const includedListSet1El = document.getElementById('includedListSet1');
-  const includedListSet2El = document.getElementById('includedListSet2');
-  const includedSet1TilesEl = document.getElementById('includedSet1Tiles');
-  const includedSet2TilesEl = document.getElementById('includedSet2Tiles');
-  const placementsEl = document.getElementById('placements');
-  const extraIndicatorEl = document.getElementById('extraIndicator');
-  const extraHeaderEl = document.getElementById('extraHeader');
-  const extraListEl = document.getElementById('extraList');
-  const set1CountEl = document.getElementById('set1Count');
-  const set2CountEl = document.getElementById('set2Count');
-  const unlockedCounterEl = document.getElementById('unlockedCounter');
-  const selectSet1Btn = document.getElementById('selectSet1');
-  const selectSet2Btn = document.getElementById('selectSet2');
-  const saveSlotsContainer = document.getElementById('saveSlots');
-  const dualSetSelect = document.getElementById('dualSetBonus');
-  const dualSetHelp = document.getElementById('dualSetHelp');
-
-  // Helpers: geometry
-  function normalize(cells){
-    if(!cells.length) return [];
-    const minr = Math.min(...cells.map(p=>p[0]));
-    const minc = Math.min(...cells.map(p=>p[1]));
-    return cells.map(p=>[p[0]-minr, p[1]-minc]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+// Geometry helpers
+function normalize(cells){
+  if(!cells || cells.length===0) return [];
+  const minr = Math.min(...cells.map(p=>p[0]));
+  const minc = Math.min(...cells.map(p=>p[1]));
+  return cells.map(p=>[p[0]-minr, p[1]-minc]).sort((a,b)=>a[0]-b[0]||a[1]-b[1]);
+}
+function rotate90(cells){ return normalize(cells.map(([r,c])=>[c,-r])); }
+function reflectX(cells){ return normalize(cells.map(([r,c])=>[-r,c])); }
+function all8_unique(cells){
+  const t0 = normalize(cells);
+  const raw=[];
+  let cur=t0;
+  for(let i=0;i<4;i++){ raw.push(cur); cur=rotate90(cur); }
+  cur=reflectX(t0);
+  for(let i=0;i<4;i++){ raw.push(cur); cur=rotate90(cur); }
+  const seen=new Set(), out=[];
+  for(const t of raw){
+    const key = t.map(p=>p[0]+','+p[1]).join(';');
+    if(!seen.has(key)){ seen.add(key); out.push(t); }
   }
-  function rotate90(cells){ return normalize(cells.map(([r,c])=>[c,-r])); }
-  function reflectX(cells){ return normalize(cells.map(([r,c])=>[-r,c])); }
-  function all8_unique(cells){
-    const t0 = normalize(cells);
-    const raw=[];
-    let cur=t0;
-    for(let i=0;i<4;i++){ raw.push(cur); cur=rotate90(cur); }
-    cur=reflectX(t0);
-    for(let i=0;i<4;i++){ raw.push(cur); cur=rotate90(cur); }
-    const seen=new Set(), out=[];
-    for(const t of raw){
-      const key = t.map(p=>p[0]+','+p[1]).join(';');
-      if(!seen.has(key)){ seen.add(key); out.push(t); }
+  return out;
+}
+
+// Shapes
+const baseShapes = [
+  {name:"monomino", cells:[[0,0]]},
+  {name:"domino", cells:[[0,0],[0,1]]},
+  {name:"tromino-I", cells:[[0,0],[0,1],[0,2]]},
+  {name:"tromino-L", cells:[[0,0],[0,1],[1,0]]},
+  {name:"tetromino-I", cells:[[0,0],[0,1],[0,2],[0,3]]},
+  {name:"tetromino-O", cells:[[0,0],[0,1],[1,0],[1,1]]},
+  {name:"tetromino-T", cells:[[0,1],[1,0],[1,1],[1,2]]},
+  {name:"tetromino-L", cells:[[0,0],[1,0],[2,0],[2,1]]},
+  {name:"pentomino-T", cells:[[0,0],[0,1],[0,2],[1,1],[2,1]]},
+  {name:"pentomino-U", cells:[[0,0],[0,2],[1,0],[1,1],[1,2]]},
+  {name:"pentomino-V", cells:[[0,0],[1,0],[2,0],[2,1],[2,2]]},
+  {name:"pentomino-X", cells:[[0,1],[1,0],[1,1],[1,2],[2,1]]},
+  {name:"pentomino-Z", cells:[[0,0],[0,1],[1,1],[2,1],[2,2]]},
+];
+const baseUniqueShapes = [
+  { name: "U1", rows: ["X.","XX","XX","XX",".X"] },
+  { name: "U2", rows: [".XX.",".XX.","XXXX"] },
+  { name: "U3", rows: ["XXXX","XXXX"] },
+  { name: "U4", rows: [".X.","XXX","XXX",".X."] },
+  { name: "U5", rows: ["XXXX",".XX.",".XX."] },
+  { name: "U6", rows: [".XX.","XXXX",".XX."] },
+  { name: "U7", rows: [".XXXX","XXXX."] },
+  { name: "U8", rows: ["XX","XX","XX","XX"] }
+];
+function rowsToCells(rows){
+  const cells = [];
+  for(let r=0;r<rows.length;r++){
+    const row = rows[r];
+    for(let c=0;c<row.length;c++){
+      if(row[c] === 'X') cells.push([r,c]);
     }
-    return out;
   }
+  return normalize(cells);
+}
+function buildShapeTypes(){
+  window.shapeTypes = [];
+  let sid = 1;
+  for(const b of baseShapes){
+    const transforms = all8_unique(b.cells);
+    for(const t of transforms){
+      window.shapeTypes.push({ id: 'S'+sid, cells: t, baseName: b.name, size: t.length });
+      sid++;
+    }
+  }
+}
+function buildUniqueTypes(){
+  window.uniqueTypes = [];
+  let uid = 1;
+  for(const b of baseUniqueShapes){
+    const cells = rowsToCells(b.rows);
+    const transforms = all8_unique(cells);
+    for(const t of transforms){
+      window.uniqueTypes.push({ id: 'U'+uid, cells: t, baseName: b.name, size: t.length });
+      uid++;
+    }
+  }
+}
 
-  // Base shapes
-  const baseShapes = [
-    {name:"monomino", cells:[[0,0]]},
-    {name:"domino", cells:[[0,0],[0,1]]},
-    {name:"tromino-I", cells:[[0,0],[0,1],[0,2]]},
-    {name:"tromino-L", cells:[[0,0],[0,1],[1,0]]},
-    {name:"tetromino-I", cells:[[0,0],[0,1],[0,2],[0,3]]},
-    {name:"tetromino-O", cells:[[0,0],[0,1],[1,0],[1,1]]},
-    {name:"tetromino-T", cells:[[0,1],[1,0],[1,1],[1,2]]},
-    {name:"tetromino-L", cells:[[0,0],[1,0],[2,0],[2,1]]},
-    {name:"pentomino-T", cells:[[0,0],[0,1],[0,2],[1,1],[2,1]]},
-    {name:"pentomino-U", cells:[[0,0],[0,2],[1,0],[1,1],[1,2]]},
-    {name:"pentomino-V", cells:[[0,0],[1,0],[2,0],[2,1],[2,2]]},
-    {name:"pentomino-X", cells:[[0,1],[1,0],[1,1],[1,2],[2,1]]},
-    {name:"pentomino-Z", cells:[[0,0],[0,1],[1,1],[2,1],[2,2]]},
-  ];
+/* ---------- UI renderers ---------- */
 
-  function buildShapeTypes(){
-    shapeTypes = [];
-    let sid = 1;
-    for(const b of baseShapes){
-      const transforms = all8_unique(b.cells);
-      for(const t of transforms){
-        shapeTypes.push({ id: 'S'+sid, cells: t, baseName: b.name, size: t.length });
-        sid++;
+function updateUnlockedCounter(){ let cnt=0; for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(window.unlocked[r][c]) cnt++; unlockedCounterEl.textContent=`Unlocked: ${cnt}`; }
+
+function renderGrid(){
+  gridEl.innerHTML = '';
+  for(let r=0;r<ROWS;r++){
+    for(let c=0;c<COLS;c++){
+      const div = document.createElement('div');
+      const k = r+','+c;
+      const placed = window.placedCells[k];
+      div.className = 'cell ' + (placed ? 'placed' : (window.unlocked[r][c] ? 'unlocked' : 'locked'));
+      if(placed){
+        if(placed.colorClass) div.classList.add(placed.colorClass);
+        if(placed.rarity === 'rare') div.classList.add('outline-rare');
+        else if(placed.rarity === 'epic') div.classList.add('outline-epic');
+        else if(placed.rarity === 'super') div.classList.add('outline-super');
+        else if(placed.rarity === 'unique') div.classList.add('outline-unique');
+        div.dataset.rarity = placed.rarity;
+        div.textContent = placed.pid || '';
+      } else {
+        div.textContent = '';
+      }
+      div.dataset.rc = k;
+      div.title = placed ? `Placed ${placed && placed.pid ? placed.pid : ''} (set ${placed && placed.set ? placed.set : ''})` : (window.unlocked[r][c] ? 'Unlocked' : 'Locked');
+      div.addEventListener('click', ()=> {
+        if(window.hasSolution) clearSolution();
+        window.unlocked[r][c] = !window.unlocked[r][c];
+        renderGrid(); updateUnlockedCounter(); updateDualSetBonusOptions(); updateExtraIndicator();
+      });
+      gridEl.appendChild(div);
+    }
+  }
+  updateUnlockedCounter();
+}
+
+/* Selected list */
+function countInstancesOfShape(shapeId){ return window.selectedInstances.filter(s=>s.shapeId===shapeId).length; }
+function addInstance(shapeId, size, baseName){
+  const iid = 'I' + (window.nextInstanceId++);
+  window.selectedInstances.push({ iid, shapeId, rarity:'rare', size, baseName, set: window.activeSet });
+}
+function removeOneInstanceOfShape(shapeId){
+  for(let i=window.selectedInstances.length-1;i>=0;i--){
+    if(window.selectedInstances[i].shapeId === shapeId){
+      if(window.selectedInstances[i].rarity === 'unique') window.currentUniqueIid = null;
+      window.selectedInstances.splice(i,1); return;
+    }
+  }
+}
+function setInstancesCountForShape(shapeId, targetCount, size, baseName){
+  const cur = window.selectedInstances.filter(s=>s.shapeId===shapeId && s.rarity!=='unique').length;
+  if(targetCount > cur){
+    for(let i=0;i<targetCount-cur;i++) addInstance(shapeId,size,baseName);
+  } else if(targetCount < cur){
+    let removed = 0;
+    for(let i=window.selectedInstances.length-1;i>=0 && removed < (cur-targetCount); i--){
+      if(window.selectedInstances[i].shapeId === shapeId && window.selectedInstances[i].rarity!=='unique'){ window.selectedInstances.splice(i,1); removed++; }
+    }
+  }
+}
+function chooseUniqueBase(baseName){
+  const rep = window.uniqueTypes.find(u => u.baseName === baseName);
+  if(!rep) return;
+  for(let i=window.selectedInstances.length-1;i>=0;i--){
+    if(window.selectedInstances[i].rarity === 'unique'){ window.selectedInstances.splice(i,1); }
+  }
+  const iid = 'I' + (window.nextInstanceId++);
+  window.selectedInstances.push({ iid, shapeId: baseName, rarity:'unique', size: rep.size, baseName, set: 0, cells: rep.cells });
+  window.currentUniqueIid = iid;
+}
+
+function renderPalette(){
+  colA.innerHTML=''; colB.innerHTML=''; colC.innerHTML=''; colUnique.innerHTML='';
+  const cats = { small:[], four:[], five:[], other:[] };
+  for(const s of window.shapeTypes){
+    if(s.size<=3) cats.small.push(s);
+    else if(s.size===4) cats.four.push(s);
+    else if(s.size===5) cats.five.push(s);
+    else cats.other.push(s);
+  }
+  function makeRow(s){
+    const row = document.createElement('div'); row.className='shape-row';
+    const mini = document.createElement('div'); mini.className='mini';
+    const maxR = Math.max(...s.cells.map(p=>p[0])); const maxC = Math.max(...s.cells.map(p=>p[1]));
+    const h = Math.max(1, Math.min(3, maxR+1)); const w = Math.max(1, Math.min(3, maxC+1));
+    mini.style.gridTemplateColumns = `repeat(${w},12px)`;
+    for(let rr=0; rr<h; rr++){
+      for(let cc=0; cc<w; cc++){
+        const mc = document.createElement('div'); mc.className='mcell';
+        if(s.cells.some(p=>p[0]===rr && p[1]===cc)) mc.classList.add('on');
+        mini.appendChild(mc);
       }
     }
+    const idEl = document.createElement('div'); idEl.className='shape-id'; idEl.textContent = s.id;
+    const countWrap = document.createElement('div'); countWrap.className='count';
+    const minus = document.createElement('button'); minus.textContent='-'; minus.style.padding='3px 6px';
+    const inp = document.createElement('input'); inp.type='number'; inp.min='0'; inp.value = countInstancesOfShape(s.id);
+    const plus = document.createElement('button'); plus.textContent='+'; plus.style.padding='3px 6px';
+    minus.addEventListener('click', ()=>{
+      removeOneInstanceOfShape(s.id);
+      inp.value = countInstancesOfShape(s.id);
+      renderSelectedList(); updateExtraIndicator();
+    });
+    plus.addEventListener('click', ()=>{
+      addInstance(s.id, s.size, s.baseName);
+      inp.value = countInstancesOfShape(s.id);
+      renderSelectedList(); updateExtraIndicator();
+    });
+    inp.addEventListener('change', ()=>{
+      let v = parseInt(inp.value||0); if(isNaN(v)||v<0) v=0;
+      setInstancesCountForShape(s.id, v, s.size, s.baseName);
+      inp.value = countInstancesOfShape(s.id);
+      renderSelectedList(); updateExtraIndicator();
+    });
+    countWrap.appendChild(minus); countWrap.appendChild(inp); countWrap.appendChild(plus);
+    row.appendChild(mini); row.appendChild(idEl); row.appendChild(countWrap);
+    return row;
   }
+  if(cats.small.length) cats.small.forEach(s=>colA.appendChild(makeRow(s))); else colA.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
+  if(cats.four.length) cats.four.forEach(s=>colB.appendChild(makeRow(s))); else colB.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
+  if(cats.five.length || cats.other.length){
+    cats.five.forEach(s=>colC.appendChild(makeRow(s)));
+    cats.other.forEach(s=>colC.appendChild(makeRow(s)));
+  } else colC.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
 
-  // Grid render
-  function renderGrid(){
-    gridEl.innerHTML = '';
-    for(let r=0;r<ROWS;r++){
-      for(let c=0;c<COLS;c++){
-        const div = document.createElement('div');
-        const k = r+','+c;
-        const placed = placedCells[k];
-        div.className = 'cell ' + (placed ? 'placed' : (unlocked[r][c] ? 'unlocked' : 'locked'));
-        if(placed){
-          if(placed.colorClass) div.classList.add(placed.colorClass);
-          if(placed.rarity === 'rare') div.classList.add('outline-rare');
-          else if(placed.rarity === 'epic') div.classList.add('outline-epic');
-          else if(placed.rarity === 'super') div.classList.add('outline-super');
-          div.dataset.rarity = placed.rarity;
-          div.textContent = placed.pid;
-        } else {
-          div.textContent = '';
+  if(window.includeUnique){
+    cardUnique.style.display = 'block';
+    if(window.uniqueTypes.length===0) {
+      colUnique.innerHTML = '<div style="color:#9fb6d4">No unique shapes</div>';
+    } else {
+      colUnique.innerHTML = '';
+      const baseMap = {};
+      for(const ut of window.uniqueTypes){
+        const base = ut.baseName || ut.id;
+        if(!baseMap[base]) baseMap[base] = ut;
+      }
+      Object.keys(baseMap).sort().forEach(baseId => {
+        const u = baseMap[baseId];
+        const row = document.createElement('div'); row.className = 'unique-row';
+        const mini = document.createElement('div'); mini.className = 'unique-mini';
+        for(let rr=0; rr<5; rr++){
+          for(let cc=0; cc<5; cc++){
+            const mc = document.createElement('div'); mc.className='mcell';
+            if(u.cells.some(q=>q[0]===rr && q[1]===cc)) mc.classList.add('on');
+            mini.appendChild(mc);
+          }
         }
-        div.dataset.rc = k;
-        div.title = placed ? `Placed ${placed.pid} (set ${placed.set})` : (unlocked[r][c] ? 'Unlocked' : 'Locked');
-        div.addEventListener('click', ()=> {
-          if(hasSolution) clearSolution();
-          unlocked[r][c] = !unlocked[r][c];
-          renderGrid(); updateUnlockedCounter(); updateDualSetBonusOptions(); updateExtraIndicator();
+        const idEl = document.createElement('div'); idEl.className='shape-id'; idEl.textContent = u.baseName;
+        const selBtn = document.createElement('button'); selBtn.textContent = (window.currentUniqueIid && window.selectedInstances.find(si=>si.iid===window.currentUniqueIid && si.baseName===u.baseName)) ? 'Chosen' : 'Select';
+        selBtn.style.background = 'linear-gradient(90deg,var(--unique),#ffb86b)'; selBtn.style.border='none'; selBtn.style.color='#2b0f00';
+        selBtn.addEventListener('click', ()=>{
+          chooseUniqueBase(u.baseName);
+          renderPalette(); renderSelectedList(); updateUniqueContainersVisibility();
         });
-        gridEl.appendChild(div);
+        row.appendChild(mini); row.appendChild(idEl); row.appendChild(selBtn);
+        colUnique.appendChild(row);
+      });
+    }
+  } else {
+    cardUnique.style.display = 'none';
+  }
+}
+
+/* Selected list renderer — shape id label removed; id kept as title attribute */
+function renderSelectedList(){
+  set1ListEl.innerHTML = ''; set2ListEl.innerHTML = ''; uniqueSelectedBox.innerHTML = '';
+  if(window.selectedInstances.length===0){
+    set1ListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
+    set2ListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
+    uniqueSelectedBox.innerHTML = '<div style="color:#9fb6d4">No Unique selected</div>';
+    set1CountEl.textContent='0'; set2CountEl.textContent='0'; updateUniqueContainersVisibility(); return;
+  }
+  const s1 = window.selectedInstances.filter(x=>x.set===1 && x.rarity!=='unique');
+  const s2 = window.selectedInstances.filter(x=>x.set===2 && x.rarity!=='unique');
+  const su = window.selectedInstances.filter(x=>x.rarity==='unique');
+  set1CountEl.textContent = s1.length; set2CountEl.textContent = s2.length;
+
+  function createItem(inst){
+    const item = document.createElement('div'); item.className = 'selected-item ' + inst.rarity;
+    item.draggable = (inst.rarity !== 'unique');
+    item.dataset.iid = inst.iid;
+
+    // mini grid only, no textual id label
+    const st = window.shapeTypes.find(s=>s.id===inst.shapeId) || window.uniqueTypes.find(s=>s.baseName===inst.shapeId) || window.uniqueTypes.find(s=>s.id===inst.shapeId);
+    const cells = (inst.rarity==='unique' && inst.cells) ? inst.cells : (st ? st.cells : [[0,0]]);
+    const maxR = cells.length ? Math.max(...cells.map(p=>p[0])) : 0;
+    const maxC = cells.length ? Math.max(...cells.map(p=>p[1])) : 0;
+    const gridCols = (inst.rarity==='unique') ? 5 : Math.max(1, Math.min(3, maxC+1));
+    const gridRows = (inst.rarity==='unique') ? 5 : Math.max(1, Math.min(3, maxR+1));
+
+    const mini = document.createElement('div'); mini.className = 'selected-mini' + (inst.rarity==='unique' ? ' unique' : '');
+    mini.style.gridTemplateColumns = `repeat(${gridCols},8px)`;
+    mini.style.gridAutoRows = `8px`;
+    mini.innerHTML = '';
+    for(let rr=0; rr<gridRows; rr++){
+      for(let cc=0; cc<gridCols; cc++){
+        const mc = document.createElement('div'); mc.className='mcell';
+        if(cells.some(q=>q[0]===rr && q[1]===cc)) mc.classList.add('on');
+        mini.appendChild(mc);
       }
     }
-    updateUnlockedCounter();
+    item.appendChild(mini);
+
+    // use title attribute so screen readers / hover show id, but don't display it visually
+    item.title = inst.shapeId;
+
+    item.addEventListener('click', (ev)=>{ ev.preventDefault(); if(inst.rarity !== 'unique'){ cycleRarityForInstance(inst.iid); } renderSelectedList(); });
+    item.addEventListener('contextmenu', (ev)=>{ ev.preventDefault(); const idx = window.selectedInstances.findIndex(x=>x.iid===inst.iid); if(idx>=0) { if(window.selectedInstances[idx].rarity === 'unique') window.currentUniqueIid = null; window.selectedInstances.splice(idx,1); } renderSelectedList(); renderPalette(); updateExtraIndicator(); updateUniqueContainersVisibility(); });
+    item.addEventListener('dragstart', (ev)=> onDragStart(ev, inst.iid));
+
+    return item;
   }
 
-  // Palette render
-  function renderPalette(){
-    colA.innerHTML=''; colB.innerHTML=''; colC.innerHTML='';
-    const cats = { small:[], four:[], five:[], other:[] };
-    for(const s of shapeTypes){
-      if(s.size<=3) cats.small.push(s);
-      else if(s.size===4) cats.four.push(s);
-      else if(s.size===5) cats.five.push(s);
-      else cats.other.push(s);
+  if(s1.length) s1.forEach(inst => set1ListEl.appendChild(createItem(inst))); else set1ListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
+  if(s2.length) s2.forEach(inst => set2ListEl.appendChild(createItem(inst))); else set2ListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
+  if(su.length) su.forEach(inst => uniqueSelectedBox.appendChild(createItem(inst))); else uniqueSelectedBox.innerHTML = '<div style="color:#9fb6d4">No Unique selected</div>';
+
+  set1ListEl.ondragover = (ev)=>{ ev.preventDefault(); set1ListEl.classList.add('droppable-over'); };
+  set1ListEl.ondragleave = ()=> set1ListEl.classList.remove('droppable-over');
+  set1ListEl.ondrop = (ev)=>{ set1ListEl.classList.remove('droppable-over'); onDropToSet(ev,1); };
+
+  set2ListEl.ondragover = (ev)=>{ ev.preventDefault(); set2ListEl.classList.add('droppable-over'); };
+  set2ListEl.ondragleave = ()=> set2ListEl.classList.remove('droppable-over');
+  set2ListEl.ondrop = (ev)=>{ set2ListEl.classList.remove('droppable-over'); onDropToSet(ev,2); };
+
+  updatePaletteInputs();
+  updateUniqueContainersVisibility();
+}
+
+function cycleRarityForInstance(iid){
+  const inst = window.selectedInstances.find(x=>x.iid===iid);
+  if(!inst) return;
+  if(inst.rarity === 'unique') return;
+  const order = ['rare','epic','super'];
+  const idx = order.indexOf(inst.rarity);
+  inst.rarity = order[(idx+1) % order.length];
+}
+function updatePaletteInputs(){
+  document.querySelectorAll('.category-body input[type="number"]').forEach(inp=>{
+    const row = inp.closest('.shape-row'); if(!row) return;
+    const idEl = row.querySelector('.shape-id'); if(!idEl) return;
+    inp.value = countInstancesOfShape(idEl.textContent);
+  });
+}
+
+// Drag/drop helpers
+function onDragStart(ev, iid){ ev.dataTransfer.setData('text/plain', iid); ev.dataTransfer.effectAllowed = 'move'; }
+function onDropToSet(ev, setNum){
+  ev.preventDefault();
+  const iid = ev.dataTransfer.getData('text/plain');
+  const inst = window.selectedInstances.find(x=>x.iid===iid);
+  if(inst){
+    if(inst.rarity === 'unique') return;
+    inst.set = setNum; renderSelectedList();
+  }
+}
+
+/* Included list */
+function renderIncludedList(placements){
+  includedListSet1El.innerHTML = ''; includedListSet2El.innerHTML = ''; includedListUniqueEl.innerHTML = '';
+  if(!placements || placements.length===0){
+    includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
+    includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
+    includedListUniqueEl.innerHTML = '<div style="color:#9fb6d4">No Unique included</div>';
+    includedSet1TilesEl.textContent='Tiles: 0'; includedSet2TilesEl.textContent='Tiles: 0'; includedUniqueTilesEl.textContent='Tiles: 0';
+    return;
+  }
+  const pSet1 = placements.filter(p=>p.set===1 && p.rarity!=='unique');
+  const pSet2 = placements.filter(p=>p.set===2 && p.rarity!=='unique');
+  const pUnique = placements.filter(p=>p.rarity==='unique' || p.set===0);
+
+  const tiles1 = pSet1.reduce((s,p)=>s + (p.placement.cells ? p.placement.cells.length : 0), 0);
+  const tiles2 = pSet2.reduce((s,p)=>s + (p.placement.cells ? p.placement.cells.length : 0), 0);
+  const tilesU = pUnique.reduce((s,p)=>s + (p.placement.cells ? p.placement.cells.length : 0), 0);
+  includedSet1TilesEl.textContent = `Tiles: ${tiles1}`; includedSet2TilesEl.textContent = `Tiles: ${tiles2}`; includedUniqueTilesEl.textContent = `Tiles: ${tilesU}`;
+
+  function mk(p){
+    const item = document.createElement('div'); item.className='included-item ' + p.rarity;
+    const mini = document.createElement('div'); mini.className = 'included-mini ' + p.rarity;
+    const st = window.shapeTypes.find(s=>s.id===p.shapeId) || window.uniqueTypes.find(s=>s.baseName===p.shapeId) || window.uniqueTypes.find(s=>s.id===p.shapeId);
+    const cells = st ? st.cells : (p.placement && p.placement.cells ? p.placement.cells : [[0,0]]);
+    const maxR = cells.length ? Math.max(...cells.map(q=>q[0])) : 0;
+    const maxC = cells.length ? Math.max(...cells.map(q=>q[1])) : 0;
+    const gridCols = p.rarity==='unique' ? 5 : Math.max(1, Math.min(3, maxC+1));
+    const gridRows = p.rarity==='unique' ? 5 : Math.max(1, Math.min(3, maxR+1));
+    mini.style.gridTemplateColumns = `repeat(${gridCols},8px)`;
+    mini.style.gridAutoRows = `8px`;
+    mini.innerHTML = '';
+    for(let rr=0; rr<gridRows; rr++){
+      for(let cc=0; cc<gridCols; cc++){
+        const mc = document.createElement('div'); mc.className='mcell';
+        if(cells.some(q=>q[0]===rr && q[1]===cc)) mc.classList.add('on');
+        mini.appendChild(mc);
+      }
     }
-    function makeRow(s){
-      const row = document.createElement('div'); row.className='shape-row';
+    item.appendChild(mini); return item;
+  }
+  if(pSet1.length) pSet1.forEach(p=> includedListSet1El.appendChild(mk(p))); else includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
+  if(pSet2.length) pSet2.forEach(p=> includedListSet2El.appendChild(mk(p))); else includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
+  if(pUnique.length) pUnique.forEach(p=> includedListUniqueEl.appendChild(mk(p))); else includedListUniqueEl.innerHTML = '<div style="color:#9fb6d4">No Unique included</div>';
+  includedUniqueContainer.style.display = window.includeUnique ? 'block' : 'none';
+}
+function clearIncludedList(){ includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedListUniqueEl.innerHTML = '<div style="color:#9fb6d4">No Unique included</div>'; includedSet1TilesEl.textContent='Tiles: 0'; includedSet2TilesEl.textContent='Tiles: 0'; includedUniqueTilesEl.textContent='Tiles: 0'; }
+
+function updateUniqueContainersVisibility(){
+  if(window.includeUnique){
+    uniqueSelectedContainer.style.display = 'block';
+    includedUniqueContainer.style.display = 'block';
+    cardUnique.style.display = 'block';
+  } else {
+    uniqueSelectedContainer.style.display = 'none';
+    includedUniqueContainer.style.display = 'none';
+    cardUnique.style.display = 'none';
+  }
+  if(!window.includeUnique) uniqueChosenIndicator.textContent='None chosen';
+  else {
+    if(!window.currentUniqueIid) uniqueChosenIndicator.textContent='None chosen';
+    else {
+      const inst = window.selectedInstances.find(si=>si.iid===window.currentUniqueIid);
+      uniqueChosenIndicator.textContent = inst ? `Chosen: ${inst.shapeId}` : 'None chosen';
+    }
+  }
+}
+
+/* ---------- Placement helpers & extra placements UI (rows of up to 4) ---------- */
+function generatePlacementsForShape(shape){
+  const cells = shape.cells;
+  const maxR = Math.max(...cells.map(p=>p[0])); const maxC = Math.max(...cells.map(p=>p[1]));
+  const placements = [];
+  for(let ar=0; ar+maxR<ROWS; ar++){
+    for(let ac=0; ac+maxC<COLS; ac++){
+      const abs = cells.map(([r,c])=>[r+ar, c+ac]);
+      let ok = true;
+      for(const [r,c] of abs){
+        if(r<0||r>=ROWS||c<0||c>=COLS){ ok=false; break; }
+        if(!window.unlocked[r][c]) { ok=false; break; }
+      }
+      if(ok) placements.push({ shapeId: shape.baseName || shape.id, anchor:[ar,ac], cells: abs });
+    }
+  }
+  return placements;
+}
+function computeSetBonus(sumTiles){ if(sumTiles < 9) return 0; const increments = Math.floor((sumTiles - 9) / 3); const capped = Math.min(increments, 4); return 265 * (capped + 1); }
+function countUnlockedTiles(){ let cnt=0; for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(window.unlocked[r][c]) cnt++; return cnt; }
+
+function getUncoveredUnlockedSet(){
+  const set = new Set();
+  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
+    const k = r+','+c; if(window.unlocked[r][c] && !window.placedCells[k]) set.add(k);
+  }
+  return set;
+}
+function findExtraPlacementsExample(){
+  const uncovered = getUncoveredUnlockedSet();
+  if(uncovered.size===0) return [];
+  const examples=[];
+  for(const s of window.shapeTypes){
+    if(s.size<=1) continue;
+    const placements = generatePlacementsForShape(s);
+    for(const p of placements){
+      const ok = p.cells.every(([r,c]) => uncovered.has(r+','+c));
+      if(ok){ examples.push({ shape:s, placement:p }); break; }
+    }
+  }
+  return examples;
+}
+function clearHighlights(){ document.querySelectorAll('.cell.extra-highlight').forEach(el=>el.classList.remove('extra-highlight')); }
+function highlightPlacement(placement){ clearHighlights(); for(const [r,c] of placement.cells){ const el = document.querySelector(`.cell[data-rc="${r},${c}"]`); if(el) el.classList.add('extra-highlight'); } }
+
+function updateExtraIndicator(){
+  if(!extraIndicatorEl) return;
+  if(!window.hasSolution){ extraIndicatorEl.style.display='none'; clearHighlights(); return; }
+  const examples = findExtraPlacementsExample();
+  if(examples.length===0){ extraIndicatorEl.style.display='none'; clearHighlights(); return; }
+  extraIndicatorEl.style.display='block';
+  extraHeaderEl.textContent = `Additional placements possible: ${examples.length} oriented shape${examples.length>1?'s':''} (excluding monomino)`;
+  extraListEl.innerHTML = '';
+
+  // Build rows with up to 4 items each
+  const perRow = 4;
+  for(let i=0;i<examples.length;i+=perRow){
+    const rowDiv = document.createElement('div'); rowDiv.className = 'extra-row';
+    const slice = examples.slice(i, i+perRow);
+    for(const ex of slice){
+      const item = document.createElement('div'); item.className='extra-item';
+      const s = ex.shape;
+      const maxR = s.cells.length ? Math.max(...s.cells.map(p=>p[0])) : 0;
+      const maxC = s.cells.length ? Math.max(...s.cells.map(p=>p[1])) : 0;
+      const gridCols = Math.max(1, Math.min(3, maxC+1));
       const mini = document.createElement('div'); mini.className='mini';
-      const maxR = Math.max(...s.cells.map(p=>p[0])); const maxC = Math.max(...s.cells.map(p=>p[1]));
-      const h = Math.max(1, Math.min(3, maxR+1)); const w = Math.max(1, Math.min(3, maxC+1));
-      mini.style.gridTemplateColumns = `repeat(${w},12px)`;
+      mini.style.gridTemplateColumns = `repeat(${gridCols},12px)`;
+      const h = Math.max(1, Math.min(3, maxR+1));
       for(let rr=0; rr<h; rr++){
-        for(let cc=0; cc<w; cc++){
+        for(let cc=0; cc<gridCols; cc++){
           const mc = document.createElement('div'); mc.className='mcell';
           if(s.cells.some(p=>p[0]===rr && p[1]===cc)) mc.classList.add('on');
           mini.appendChild(mc);
         }
       }
-      const idEl = document.createElement('div'); idEl.className='shape-id'; idEl.textContent = s.id;
-      const countWrap = document.createElement('div'); countWrap.className='count';
-      const minus = document.createElement('button'); minus.textContent='-'; minus.style.padding='3px 6px';
-      const inp = document.createElement('input'); inp.type='number'; inp.min='0'; inp.value = countInstancesOfShape(s.id);
-      const plus = document.createElement('button'); plus.textContent='+'; plus.style.padding='3px 6px';
-      minus.addEventListener('click', ()=>{
-        removeOneInstanceOfShape(s.id);
-        inp.value = countInstancesOfShape(s.id);
-        renderSelectedList(); updateExtraIndicator();
-      });
-      plus.addEventListener('click', ()=>{
-        addInstance(s.id, s.size, s.baseName);
-        inp.value = countInstancesOfShape(s.id);
-        renderSelectedList(); updateExtraIndicator();
-      });
-      inp.addEventListener('change', ()=>{
-        let v = parseInt(inp.value||0); if(isNaN(v)||v<0) v=0;
-        setInstancesCountForShape(s.id, v, s.size, s.baseName);
-        inp.value = countInstancesOfShape(s.id);
-        renderSelectedList(); updateExtraIndicator();
-      });
-      countWrap.appendChild(minus); countWrap.appendChild(inp); countWrap.appendChild(plus);
-      row.appendChild(mini); row.appendChild(idEl); row.appendChild(countWrap);
-      return row;
-    }
-    if(cats.small.length) cats.small.forEach(s=>colA.appendChild(makeRow(s))); else colA.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
-    if(cats.four.length) cats.four.forEach(s=>colB.appendChild(makeRow(s))); else colB.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
-    if(cats.five.length || cats.other.length){
-      cats.five.forEach(s=>colC.appendChild(makeRow(s)));
-      cats.other.forEach(s=>colC.appendChild(makeRow(s)));
-    } else colC.innerHTML='<div style="color:#9fb6d4">No shapes</div>';
-    setTimeout(adjustInfoPanelPosition, 30);
-  }
-
-  // Selected instances management
-  let nextInstanceId = 1;
-  function addInstance(shapeId, size, baseName){
-    const iid = 'I' + (nextInstanceId++);
-    selectedInstances.push({ iid, shapeId, rarity:'rare', size, baseName, set: activeSet });
-  }
-  function removeOneInstanceOfShape(shapeId){
-    for(let i=selectedInstances.length-1;i>=0;i--){
-      if(selectedInstances[i].shapeId === shapeId){ selectedInstances.splice(i,1); return; }
-    }
-  }
-  function setInstancesCountForShape(shapeId, targetCount, size, baseName){
-    const cur = selectedInstances.filter(s=>s.shapeId===shapeId).length;
-    if(targetCount > cur){
-      for(let i=0;i<targetCount-cur;i++) addInstance(shapeId,size,baseName);
-    } else if(targetCount < cur){
-      let removed = 0;
-      for(let i=selectedInstances.length-1;i>=0 && removed < (cur-targetCount); i--){
-        if(selectedInstances[i].shapeId === shapeId){ selectedInstances.splice(i,1); removed++; }
-      }
-    }
-  }
-  function countInstancesOfShape(shapeId){ return selectedInstances.filter(s=>s.shapeId===shapeId).length; }
-
-  // Drag/drop + active set buttons
-  function onDragStart(ev, iid){ ev.dataTransfer.setData('text/plain', iid); ev.dataTransfer.effectAllowed = 'move'; }
-  function onDropToSet(ev, setNum){
-    ev.preventDefault();
-    const iid = ev.dataTransfer.getData('text/plain');
-    const inst = selectedInstances.find(x=>x.iid===iid);
-    if(inst){ inst.set = setNum; renderSelectedList(); }
-  }
-
-  selectSet1Btn.addEventListener('click', ()=>{ activeSet=1; selectSet1Btn.setAttribute('aria-pressed','true'); selectSet2Btn.setAttribute('aria-pressed','false'); selectSet1Btn.classList.remove('secondary'); selectSet2Btn.classList.add('secondary'); });
-  selectSet2Btn.addEventListener('click', ()=>{ activeSet=2; selectSet2Btn.setAttribute('aria-pressed','true'); selectSet1Btn.setAttribute('aria-pressed','false'); selectSet2Btn.classList.remove('secondary'); selectSet1Btn.classList.add('secondary'); });
-  // default style
-  selectSet1Btn.classList.remove('secondary');
-
-  // Render selected list
-  function renderSelectedList(){
-    set1ListEl.innerHTML = ''; set2ListEl.innerHTML = '';
-    if(selectedInstances.length===0){
-      set1ListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
-      set2ListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
-      set1CountEl.textContent='0'; set2CountEl.textContent='0'; return;
-    }
-    const s1 = selectedInstances.filter(x=>x.set===1);
-    const s2 = selectedInstances.filter(x=>x.set===2);
-    set1CountEl.textContent = s1.length; set2CountEl.textContent = s2.length;
-
-    function createItem(inst){
-      const item = document.createElement('div'); item.className = 'selected-item ' + inst.rarity;
-      item.draggable = true; item.dataset.iid = inst.iid;
-      const mini = document.createElement('div'); mini.className='selected-mini';
-      const st = shapeTypes.find(s=>s.id===inst.shapeId);
-      const cells = st ? st.cells : [[0,0]];
-      for(let rr=0; rr<3; rr++){
-        for(let cc=0; cc<3; cc++){
-          const mc = document.createElement('div'); mc.className='mcell';
-          if(cells.some(q=>q[0]===rr && q[1]===cc)) mc.classList.add('on');
-          mini.appendChild(mc);
-        }
-      }
-      item.appendChild(mini);
-      item.addEventListener('click', (ev)=>{ ev.preventDefault(); cycleRarityForInstance(inst.iid); renderSelectedList(); });
-      item.addEventListener('contextmenu', (ev)=>{ ev.preventDefault(); const idx = selectedInstances.findIndex(x=>x.iid===inst.iid); if(idx>=0) selectedInstances.splice(idx,1); renderSelectedList(); renderPalette(); updateExtraIndicator(); });
-      item.addEventListener('dragstart', (ev)=> onDragStart(ev, inst.iid));
-      return item;
-    }
-    s1.forEach(inst => set1ListEl.appendChild(createItem(inst)));
-    s2.forEach(inst => set2ListEl.appendChild(createItem(inst)));
-
-    set1ListEl.ondragover = (ev)=>{ ev.preventDefault(); set1ListEl.classList.add('droppable-over'); };
-    set1ListEl.ondragleave = ()=> set1ListEl.classList.remove('droppable-over');
-    set1ListEl.ondrop = (ev)=>{ set1ListEl.classList.remove('droppable-over'); onDropToSet(ev,1); };
-
-    set2ListEl.ondragover = (ev)=>{ ev.preventDefault(); set2ListEl.classList.add('droppable-over'); };
-    set2ListEl.ondragleave = ()=> set2ListEl.classList.remove('droppable-over');
-    set2ListEl.ondrop = (ev)=>{ set2ListEl.classList.remove('droppable-over'); onDropToSet(ev,2); };
-
-    updatePaletteInputs();
-  }
-
-  function cycleRarityForInstance(iid){
-    const inst = selectedInstances.find(x=>x.iid===iid);
-    if(!inst) return;
-    const idx = RARITY_ORDER.indexOf(inst.rarity);
-    inst.rarity = RARITY_ORDER[(idx+1)%RARITY_ORDER.length];
-  }
-
-  function updatePaletteInputs(){
-    document.querySelectorAll('.category-body input[type="number"]').forEach(inp=>{
-      const row = inp.closest('.shape-row'); if(!row) return;
-      const idEl = row.querySelector('.shape-id'); if(!idEl) return;
-      inp.value = countInstancesOfShape(idEl.textContent);
-    });
-  }
-
-  // Included list
-  function renderIncludedList(placements){
-    includedListSet1El.innerHTML = ''; includedListSet2El.innerHTML = '';
-    if(!placements || placements.length===0){
-      includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
-      includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
-      includedSet1TilesEl.textContent='Tiles: 0'; includedSet2TilesEl.textContent='Tiles: 0'; return;
-    }
-    const p1 = placements.filter(p=>p.set===1);
-    const p2 = placements.filter(p=>p.set===2);
-    const tiles1 = p1.reduce((s,p)=>s + (p.placement.cells ? p.placement.cells.length : 0), 0);
-    const tiles2 = p2.reduce((s,p)=>s + (p.placement.cells ? p.placement.cells.length : 0), 0);
-    includedSet1TilesEl.textContent = `Tiles: ${tiles1}`; includedSet2TilesEl.textContent = `Tiles: ${tiles2}`;
-
-    function mk(p){
-      const item = document.createElement('div'); item.className='included-item ' + p.rarity;
-      const mini = document.createElement('div'); mini.className = 'included-mini ' + p.rarity;
-      const st = shapeTypes.find(s=>s.id===p.shapeId);
-      const cells = st ? st.cells : [[0,0]];
-      for(let rr=0; rr<3; rr++){
-        for(let cc=0; cc<3; cc++){
-          const mc = document.createElement('div'); mc.className='mcell';
-          if(cells.some(q=>q[0]===rr && q[1]===cc)) mc.classList.add('on');
-          mini.appendChild(mc);
-        }
-      }
-      item.appendChild(mini); return item;
-    }
-    p1.forEach(p=> includedListSet1El.appendChild(mk(p)));
-    p2.forEach(p=> includedListSet2El.appendChild(mk(p)));
-  }
-  function clearIncludedList(){ includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedSet1TilesEl.textContent='Tiles: 0'; includedSet2TilesEl.textContent='Tiles: 0'; }
-
-  // --- Fix: clearSolution implementation (was missing) ---
-  function clearSolution(){
-    // Remove any placed pieces and clear solution state, update UI.
-    placedCells = {};
-    hasSolution = false;
-    // Clear placements display and included lists
-    placementsEl.innerHTML = '';
-    clearIncludedList();
-    // Reset scoreboard to zeros
-    updateScoreboard({ set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, 0, 0);
-    // Remove any highlight and re-render grid
-    clearHighlights();
-    renderGrid();
-    updateExtraIndicator();
-  }
-  // --- End fix ---
-
-  // Placements generation & solver helpers (same as earlier robust implementation)
-  function generatePlacementsForShapeType(shape){
-    const cells = shape.cells;
-    const maxR = Math.max(...cells.map(p=>p[0])); const maxC = Math.max(...cells.map(p=>p[1]));
-    const placements = [];
-    for(let ar=0; ar+maxR<ROWS; ar++){
-      for(let ac=0; ac+maxC<COLS; ac++){
-        const abs = cells.map(([r,c])=>[r+ar, c+ac]);
-        let ok = true;
-        for(const [r,c] of abs){
-          if(r<0||r>=ROWS||c<0||c>=COLS){ ok=false; break; }
-          if(!unlocked[r][c]) { ok=false; break; }
-        }
-        if(ok) placements.push({ shapeId: shape.id, anchor:[ar,ac], cells: abs });
-      }
-    }
-    return placements;
-  }
-
-  function computeSetBonus(sumTiles){
-    if(sumTiles < 9) return 0;
-    const increments = Math.floor((sumTiles - 9) / 3);
-    const capped = Math.min(increments, 4);
-    return 265 * (capped + 1);
-  }
-
-  // Dual set bonus UI helpers
-  function countUnlockedTiles(){
-    let cnt=0; for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(unlocked[r][c]) cnt++;
-    return cnt;
-  }
-
-  function generateDualCombos(totalUnlocked){
-    // Produce pairs [a,b] where a>=b, each from SET_THRESHOLDS and a+b <= totalUnlocked.
-    const result = [];
-    const allowed = SET_THRESHOLDS.filter(x => x <= totalUnlocked);
-    for(let i = allowed.length-1; i>=0; i--){
-      for(let j = i; j>=0; j--){
-        const a = allowed[i], b = allowed[j];
-        if(a + b <= totalUnlocked){
-          result.push([a,b]);
-        }
-      }
-    }
-    // Ensure we always include "None" by caller
-    return result;
-  }
-
-  function updateDualSetBonusOptions(){
-    const total = countUnlockedTiles();
-    if(total < 24){
-      dualSetSelect.disabled = true;
-      dualSetHelp.textContent = 'Locked — enable by unlocking at least 24 tiles.';
-      // keep current selection as 'none'
-      if(dualSetSelect.value !== 'none') dualSetSelect.value = 'none';
-      // clear other options
-      dualSetSelect.innerHTML = '<option value="none">None</option>';
-      return;
-    }
-    // update every time unlocked changes (the requirement states update when unlocked changes by increments of 3;
-    // we regenerate regardless — it is cheap — but still keep ordering by descending a then b)
-    const combos = generateDualCombos(total);
-    dualSetSelect.innerHTML = '';
-    // keep a none option
-    const noneOpt = document.createElement('option'); noneOpt.value = 'none'; noneOpt.textContent = 'None'; dualSetSelect.appendChild(noneOpt);
-    combos.forEach(([a,b])=>{
-      const opt = document.createElement('option');
-      opt.value = `${a}-${b}`;
-      opt.textContent = `${a}-${b}`;
-      dualSetSelect.appendChild(opt);
-    });
-    dualSetSelect.disabled = false;
-    dualSetHelp.textContent = `Select a target split for set bonuses (total unlocked: ${total}).`;
-  }
-
-  // The runSolveOptimize is included above in previous iterations; we re-use the robust version here and
-  // add enforcement of the selected dual-set thresholds.
-  function runSolveOptimize(timeoutMs = 3500){
-    const instances = selectedInstances.slice();
-    if(instances.length === 0){
-      clearSolution(); placementsEl.innerHTML = 'No pieces selected.'; clearIncludedList(); return;
-    }
-
-    const placementsByInstance = instances.map(inst => {
-      const st = shapeTypes.find(s=>s.id===inst.shapeId);
-      return st ? generatePlacementsForShapeType(st) : [];
-    });
-
-    for(let i=0;i<instances.length;i++){
-      const inst = instances[i];
-      if(inst.rarity==='super' && placementsByInstance[i].length===0){
-        showInvalidSelection('One or more Super Epic pieces have no valid placement on the current unlocked grid. Super Epics must be included.');
-        clearIncludedList(); return;
-      }
-    }
-    const anyPlacement = placementsByInstance.some(arr=>arr.length>0);
-    if(!anyPlacement){ showInvalidSelection('No valid placement exists for any selected piece on the current unlocked grid.'); clearIncludedList(); return; }
-
-    // Determine selected dual thresholds
-    let requiredSet1 = 0, requiredSet2 = 0;
-    const sel = dualSetSelect.value;
-    if(sel && sel !== 'none'){
-      const parts = (''+sel).split('-').map(x=>parseInt(x,10)||0);
-      if(parts.length===2){ requiredSet1 = Math.max(0, parts[0]); requiredSet2 = Math.max(0, parts[1]); }
-    }
-
-    // Quick feasibility check: total unlocked tiles smaller than required sum -> impossible
-    const totalUnlocked = countUnlockedTiles();
-    if(requiredSet1 + requiredSet2 > totalUnlocked){
-      showInvalidSelection('Selected Dual Set Bonus cannot be satisfied with current unlocked tiles.');
-      return;
-    }
-
-    // order indices
-    const idxs = instances.map((inst, idx)=>({ idx, rarityOrder: inst.rarity==='super' ? 0 : (inst.rarity==='epic'?1:2), opts: placementsByInstance[idx].length || 0 }));
-    idxs.sort((a,b)=> a.rarityOrder - b.rarityOrder || a.opts - b.opts);
-    const indexMap = idxs.map(o=>o.idx);
-
-    function placeAdds(placement){ return placement.cells.map(([r,c])=>`${r},${c}`); }
-    function computeScores(cur){
-      const rrRare = cur.set1.rare*RARITY_VALUES.rare + cur.set2.rare*RARITY_VALUES.rare;
-      const rrEpic = cur.set1.epic*RARITY_VALUES.epic + cur.set2.epic*RARITY_VALUES.epic;
-      const rrSuper = cur.set1.super*RARITY_VALUES.super + cur.set2.super*RARITY_VALUES.super;
-      const rrSum = rrRare + rrEpic + rrSuper;
-      const total1 = cur.set1.rare+cur.set1.epic+cur.set1.super;
-      const total2 = cur.set2.rare+cur.set2.epic+cur.set2.super;
-      const overflow = Math.max(0,total1-21);
-      const set1ForBonus = Math.min(total1,21);
-      const set2ForBonus = total2 + overflow;
-      const setBonus1 = computeSetBonus(set1ForBonus);
-      const setBonus2 = computeSetBonus(set2ForBonus);
-      return { rrSum, setBonus1, setBonus2, total1, total2 };
-    }
-
-    function solveVariant(timeBudgetMs=1000, allowRares=true){
-      const start = Date.now();
-      const used = new Set();
-      let best = { actualTotal:-1, placements:[], tilesByRarityBySet:{set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0}}, rrSum:0, setBonus1:0, setBonus2:0, supersPlaced:0, epicsPlaced:0 };
-
-      function backtrack(pos, curTiles, chosen){
-        if(Date.now()-start > timeBudgetMs) return;
-        if(pos>=indexMap.length){
-          const mandatorySupers = instances.filter(x=>x.rarity==='super').length;
-          const supersPlaced = curTiles.set1.super + curTiles.set2.super;
-          if(supersPlaced < mandatorySupers) return;
-
-          // enforce selected dual thresholds here
-          const total1 = curTiles.set1.rare + curTiles.set1.epic + curTiles.set1.super;
-          const total2 = curTiles.set2.rare + curTiles.set2.epic + curTiles.set2.super;
-          if(total1 < requiredSet1) return;
-          if(total2 < requiredSet2) return;
-
-          const sc = computeScores(curTiles);
-          const actualTotal = sc.rrSum + sc.setBonus1 + sc.setBonus2;
-          const epicsPlaced = curTiles.set1.epic + curTiles.set2.epic;
-
-          let better=false;
-          if(actualTotal > best.actualTotal) better=true;
-          else if(actualTotal === best.actualTotal){
-            if(supersPlaced > (best.supersPlaced||0)) better=true;
-            else if(supersPlaced === (best.supersPlaced||0)){
-              if(epicsPlaced > (best.epicsPlaced||0)) better=true;
-              else if(epicsPlaced === (best.epicsPlaced||0)){
-                const raresPlaced = curTiles.set1.rare + curTiles.set2.rare;
-                const bestRares = best.tilesByRarityBySet ? (best.tilesByRarityBySet.set1.rare + best.tilesByRarityBySet.set2.rare) : Infinity;
-                if(raresPlaced < bestRares) better=true;
-              }
-            }
-          }
-
-          if(better){
-            best.actualTotal = actualTotal;
-            best.rrSum = sc.rrSum;
-            best.setBonus1 = sc.setBonus1;
-            best.setBonus2 = sc.setBonus2;
-            best.tilesByRarityBySet = JSON.parse(JSON.stringify(curTiles));
-            best.placements = chosen.slice();
-            best.supersPlaced = supersPlaced;
-            best.epicsPlaced = epicsPlaced;
-          }
-          return;
-        }
-
-        const instIdx = indexMap[pos];
-        const inst = instances[instIdx];
-        const opts = placementsByInstance[instIdx];
-        const isRare = inst.rarity === 'rare';
-        const mandatory = inst.rarity === 'super';
-
-        for(const p of opts){
-          if(isRare && !allowRares) continue;
-          const keys = placeAdds(p); let conflict=false;
-          for(const k of keys) if(used.has(k)){ conflict=true; break; }
-          if(conflict) continue;
-          for(const k of keys) used.add(k);
-          const target = inst.set===2 ? 'set2' : 'set1';
-          curTiles[target][inst.rarity] += inst.size;
-          chosen.push({ iid: inst.iid, shapeId: inst.shapeId, rarity: inst.rarity, placement: p, set: inst.set });
-          backtrack(pos+1, curTiles, chosen);
-          chosen.pop();
-          curTiles[target][inst.rarity] -= inst.size;
-          for(const k of keys) used.delete(k);
-        }
-        if(!mandatory) backtrack(pos+1, curTiles, chosen);
-      }
-
-      backtrack(0, { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, []);
-      return best;
-    }
-
-    const t = Math.max(200, Math.floor(timeoutMs/3));
-    const a = solveVariant(t,false);
-    const a2 = solveVariant(t,true);
-    const b = solveVariant(t,false);
-    const b2 = solveVariant(t,true);
-    const cand = [a2,b2,a,b].filter(c => c && c.placements && c.placements.length>0);
-
-    if(cand.length===0){ showInvalidSelection('No valid tiling found (that satisfies the constraints).'); clearIncludedList(); return; }
-
-    cand.sort((x,y)=>{
-      if(x.actualTotal !== y.actualTotal) return y.actualTotal - x.actualTotal;
-      if((x.supersPlaced||0) !== (y.supersPlaced||0)) return (y.supersPlaced||0) - (x.supersPlaced||0);
-      if((x.epicsPlaced||0) !== (y.epicsPlaced||0)) return (y.epicsPlaced||0) - (x.epicsPlaced||0);
-      return 0;
-    });
-    const best = cand[0];
-
-    // Final validation: ensure best meets the selected dual thresholds (safety)
-    const bestTotal1 = (best.tilesByRarityBySet && best.tilesByRarityBySet.set1) ? (best.tilesByRarityBySet.set1.rare + best.tilesByRarityBySet.set1.epic + best.tilesByRarityBySet.set1.super) : 0;
-    const bestTotal2 = (best.tilesByRarityBySet && best.tilesByRarityBySet.set2) ? (best.tilesByRarityBySet.set2.rare + best.tilesByRarityBySet.set2.epic + best.tilesByRarityBySet.set2.super) : 0;
-    if(bestTotal1 < requiredSet1 || bestTotal2 < requiredSet2){
-      showInvalidSelection('No tiling found that satisfies the selected Dual Set Bonus targets.');
-      return;
-    }
-
-    placedCells = {};
-    for(let i=0;i<best.placements.length;i++){
-      const p = best.placements[i];
-      const pid = 'P'+(i+1);
-      for(const [r,c] of p.placement.cells){
-        placedCells[`${r},${c}`] = { pid, iid: p.iid, shapeId: p.shapeId, rarity: p.rarity, set: p.set, colorClass: sizeToColorClass(p.placement.cells.length) };
-      }
-    }
-    updateScoreboard(best.tilesByRarityBySet || { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, best.setBonus1 || 0, best.setBonus2 || 0);
-    hasSolution = true;
-    renderGrid();
-    placementsEl.innerHTML = ''; const displayTotal = (best.rrSum || 0) + (best.setBonus1 || 0) + (best.setBonus2 || 0);
-    placementsEl.appendChild(document.createTextNode(`Best Total: ${displayTotal}`));
-    renderIncludedList(best.placements);
-    updateExtraIndicator();
-  }
-
-  function sizeToColorClass(tileCount){
-    if(tileCount>=1 && tileCount<=3) return 'placed-red';
-    if(tileCount===4) return 'placed-green';
-    if(tileCount===5) return 'placed-blue';
-    return 'placed-blue';
-  }
-
-  function updateScoreboard(tilesByRarityBySet = { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, setBonus1=0, setBonus2=0){
-    const t1 = tilesByRarityBySet.set1, t2 = tilesByRarityBySet.set2;
-    const rr1_rare = t1.rare * RARITY_VALUES.rare;
-    const rr1_epic = t1.epic * RARITY_VALUES.epic;
-    const rr1_super = t1.super * RARITY_VALUES.super;
-    const rr2_rare = t2.rare * RARITY_VALUES.rare;
-    const rr2_epic = t2.epic * RARITY_VALUES.epic;
-    const rr2_super = t2.super * RARITY_VALUES.super;
-
-    document.getElementById('sb_tiles1_rare').textContent = t1.rare;
-    document.getElementById('sb_tiles1_epic').textContent = t1.epic;
-    document.getElementById('sb_tiles1_super').textContent = t1.super;
-    document.getElementById('sb_rr1_rare').textContent = rr1_rare;
-    document.getElementById('sb_rr1_epic').textContent = rr1_epic;
-    document.getElementById('sb_rr1_super').textContent = rr1_super;
-    document.getElementById('sb_set1_rare').textContent = setBonus1;
-    document.getElementById('sb_set1_epic').textContent = setBonus1;
-    document.getElementById('sb_set1_super').textContent = setBonus1;
-
-    document.getElementById('sb_tiles2_rare').textContent = t2.rare;
-    document.getElementById('sb_tiles2_epic').textContent = t2.epic;
-    document.getElementById('sb_tiles2_super').textContent = t2.super;
-    document.getElementById('sb_rr2_rare').textContent = rr2_rare;
-    document.getElementById('sb_rr2_epic').textContent = rr2_epic;
-    document.getElementById('sb_rr2_super').textContent = rr2_super;
-    document.getElementById('sb_set2_rare').textContent = setBonus2;
-    document.getElementById('sb_set2_epic').textContent = setBonus2;
-    document.getElementById('sb_set2_super').textContent = setBonus2;
-  }
-
-  function showInvalidSelection(err){
-    clearSolution();
-    placementsEl.innerHTML = `<div style="color:#fecaca;font-weight:700">Invalid selection — no tiling exists for the current selection.</div>
-      <div style="color:#9fb6d4;margin-top:6px">${err || 'Please adjust your selected shapes and try again.'}</div>`;
-  }
-
-  // Extra indicator
-  function getUncoveredUnlockedSet(){
-    const set = new Set();
-    for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){
-      const k = r+','+c; if(unlocked[r][c] && !placedCells[k]) set.add(k);
-    }
-    return set;
-  }
-  function findExtraPlacementsExample(){
-    const uncovered = getUncoveredUnlockedSet();
-    if(uncovered.size===0) return [];
-    const examples=[];
-    for(const s of shapeTypes){
-      if(s.size<=1) continue;
-      const placements = generatePlacementsForShapeType(s);
-      for(const p of placements){
-        const ok = p.cells.every(([r,c]) => uncovered.has(r+','+c));
-        if(ok){ examples.push({ shape:s, placement:p }); break; }
-      }
-    }
-    return examples;
-  }
-  function clearHighlights(){ document.querySelectorAll('.cell.extra-highlight').forEach(el=>el.classList.remove('extra-highlight')); }
-  function highlightPlacement(placement){ clearHighlights(); for(const [r,c] of placement.cells){ const el = document.querySelector(`.cell[data-rc="${r},${c}"]`); if(el) el.classList.add('extra-highlight'); } }
-  function ensureExtraElements(){ return { extraIndicatorEl, extraHeaderEl, extraListEl }; }
-  function updateExtraIndicator(){
-    const els = ensureExtraElements(); const extraEl = els.extraIndicatorEl, headerEl = els.extraHeaderEl, listEl = els.extraListEl;
-    if(!extraEl || !headerEl || !listEl) return;
-    if(!hasSolution){ extraEl.style.display='none'; clearHighlights(); return; }
-    const examples = findExtraPlacementsExample();
-    if(examples.length===0){ extraEl.style.display='none'; clearHighlights(); return; }
-    extraEl.style.display='block'; headerEl.textContent = `Additional placements possible: ${examples.length} oriented shape${examples.length>1?'s':''} (excluding monomino)`;
-    listEl.innerHTML = '';
-    for(const ex of examples){
-      const item = document.createElement('div'); item.className='extra-item';
-      const mini = document.createElement('div'); mini.className='mini';
-      const s = ex.shape;
-      const maxR = Math.max(...s.cells.map(p=>p[0])); const maxC = Math.max(...s.cells.map(p=>p[1]));
-      const h = Math.max(1, Math.min(3, maxR+1)); const w = Math.max(1, Math.min(3, maxC+1));
-      mini.style.gridTemplateColumns = `repeat(${w},12px)`;
-      for(let rr=0; rr<h; rr++){ for(let cc=0; cc<w; cc++){ const mc = document.createElement('div'); mc.className='mcell'; if(s.cells.some(p=>p[0]===rr && p[1]===cc)) mc.classList.add('on'); mini.appendChild(mc); } }
       const idSpan = document.createElement('div'); idSpan.style.color='#cfe8ff'; idSpan.style.fontSize='13px'; idSpan.textContent = s.id;
-      const plusBtn = document.createElement('button'); plusBtn.textContent = '+';
-      plusBtn.addEventListener('click', ()=>{ const iid='I'+(nextInstanceId++); selectedInstances.push({ iid, shapeId:s.id, rarity:'rare', size:s.size, baseName:s.baseName, set: activeSet }); renderSelectedList(); updateExtraIndicator(); });
+      const plusBtn = document.createElement('button'); plusBtn.textContent = '+'; plusBtn.style.padding='6px';
+      plusBtn.addEventListener('click', ()=>{ const iid='I'+(window.nextInstanceId++); window.selectedInstances.push({ iid, shapeId:s.id, rarity:'rare', size:s.size, baseName:s.baseName, set: window.activeSet }); renderSelectedList(); updateExtraIndicator(); });
+      item.appendChild(mini); item.appendChild(idSpan); item.appendChild(plusBtn);
       item.addEventListener('mouseenter', ()=> highlightPlacement(ex.placement));
       item.addEventListener('mouseleave', ()=> clearHighlights());
-      item.appendChild(mini); item.appendChild(idSpan); item.appendChild(plusBtn);
-      listEl.appendChild(item);
+      rowDiv.appendChild(item);
+    }
+    extraListEl.appendChild(rowDiv);
+  }
+}
+
+/* ---------- Solver (same algorithm, kept robust) ---------- */
+function sizeToColorClassForPlacement(p){
+  if(p.rarity === 'unique') return 'placed-unique';
+  const tc = p.placement.cells.length;
+  if(tc>=1 && tc<=3) return 'placed-red';
+  if(tc===4) return 'placed-green';
+  if(tc===5) return 'placed-blue';
+  return 'placed-blue';
+}
+
+function updateScoreboard(tilesByRarityBySet = { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, setBonus1=0, setBonus2=0){
+  const t1 = tilesByRarityBySet.set1 || {rare:0,epic:0,super:0}, t2 = tilesByRarityBySet.set2 || {rare:0,epic:0,super:0};
+  document.getElementById('sb_tiles1_rare').textContent = t1.rare||0;
+  document.getElementById('sb_tiles1_epic').textContent = t1.epic||0;
+  document.getElementById('sb_tiles1_super').textContent = t1.super||0;
+  document.getElementById('sb_rr1_rare').textContent = (t1.rare||0) * RARITY_VALUES.rare;
+  document.getElementById('sb_rr1_epic').textContent = (t1.epic||0) * RARITY_VALUES.epic;
+  document.getElementById('sb_rr1_super').textContent = (t1.super||0) * RARITY_VALUES.super;
+  document.getElementById('sb_set1_rare').textContent = setBonus1;
+  document.getElementById('sb_set1_epic').textContent = setBonus1;
+  document.getElementById('sb_set1_super').textContent = setBonus1;
+
+  document.getElementById('sb_tiles2_rare').textContent = t2.rare||0;
+  document.getElementById('sb_tiles2_epic').textContent = t2.epic||0;
+  document.getElementById('sb_tiles2_super').textContent = t2.super||0;
+  document.getElementById('sb_rr2_rare').textContent = (t2.rare||0) * RARITY_VALUES.rare;
+  document.getElementById('sb_rr2_epic').textContent = (t2.epic||0) * RARITY_VALUES.epic;
+  document.getElementById('sb_rr2_super').textContent = (t2.super||0) * RARITY_VALUES.super;
+  document.getElementById('sb_set2_rare').textContent = setBonus2;
+  document.getElementById('sb_set2_epic').textContent = setBonus2;
+  document.getElementById('sb_set2_super').textContent = setBonus2;
+}
+
+function showInvalidSelection(err){
+  clearSolution();
+  placementsEl.innerHTML = `<div style="color:#fecaca;font-weight:700">Invalid selection — no tiling exists for the current selection.</div>
+    <div style="color:#9fb6d4;margin-top:6px">${err || 'Please adjust your selected shapes and try again.'}</div>`;
+}
+
+function runSolveOptimize(timeoutMs = 3500){
+  // For brevity and safety, the solver uses the same algorithm implemented previously and is robustly wrapped.
+  try{
+    // solver implementation (unchanged from previous complete version)
+    // We keep the full solver code integrated — omitted here for brevity in analysis but present in runtime.
+    // In this file it executes the same backtracking logic and updates placedCells, scoreboard, included lists, and extra indicator.
+    // To ensure the file is complete, the solver code is the same as in earlier full builds.
+    // For readability in this message we invoke a self-contained function below that performs the optimization.
+    _runSolverInternal(timeoutMs);
+  } catch(err){
+    console.error('Solver error', err);
+    placementsEl.innerHTML = `<div style="color:#fecaca;font-weight:700">Solver error — see console</div><div style="color:#9fb6d4;margin-top:6px">${String(err)}</div>`;
+  }
+}
+
+/* Internal solver implementation (copied in full for completeness) */
+/*
+Patch: replacement implementation for function _runSolverInternal(timeoutMs)
+Where to paste: In the HTML you provided, open the <script> section and find the existing
+function declaration that starts with:
+
+  function _runSolverInternal(timeoutMs){
+
+Replace that entire function body (from that line through the matching closing brace)
+with the contents of this file.
+
+This updated implementation adds:
+ - quick infeasibility checks (total tiles vs unlocked tiles)
+ - connected-component check for small isolated unlocked regions
+ - a timedOut flag to distinguish "no solution found" from "search timed out"
+ - clearer messages to the user when a quick check fails or the solver timed out
+
+Apply the replacement exactly; no other modifications are required.
+*/
+
+function _runSolverInternal(timeoutMs){
+  // Copy of selected instances (work on the copy)
+  const instances = window.selectedInstances.slice();
+
+  // Basic validation for Unique mode
+  if (window.includeUnique) {
+    const hasUniqueInst = instances.some(i => i.rarity === 'unique');
+    if (!hasUniqueInst) {
+      showInvalidSelection('Include Unique is enabled but no Unique shape is selected.');
+      clearIncludedList();
+      return;
     }
   }
 
-  // Info panel placement
-  function rectsIntersect(a,b){ return !(b.left >= a.right || b.right <= a.left || b.top >= a.bottom || b.bottom <= a.top); }
-  function adjustInfoPanelPosition(){ const topRow=document.querySelector('.topRow'); if(!topRow.contains(document.getElementById('infoPanel'))) topRow.appendChild(document.getElementById('infoPanel')); }
+  // If no pieces selected, clear UI and exit
+  if (instances.length === 0) {
+    clearSolution();
+    placementsEl.innerHTML = 'No pieces selected.';
+    clearIncludedList();
+    return;
+  }
 
-  // Unlocked counter
-  function updateUnlockedCounter(){ let cnt=0; for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++) if(unlocked[r][c]) cnt++; unlockedCounterEl.textContent=`Unlocked: ${cnt}`; }
+  // QUICK PRE-CHECK 1: total selected tiles must not exceed unlocked tiles
+  const totalUnlocked = countUnlockedTiles();
+  const totalSelectedTiles = instances.reduce((acc, it) => acc + (it.size || 0), 0);
+  if (totalSelectedTiles > totalUnlocked) {
+    showInvalidSelection(`Selected pieces require ${totalSelectedTiles} tiles but only ${totalUnlocked} tiles are unlocked.`);
+    clearIncludedList();
+    return;
+  }
 
-  // Save/load (localStorage)
-  function loadSaves(){ try{ const raw = localStorage.getItem(SAVES_KEY); if(!raw) return [null,null,null]; const arr = JSON.parse(raw); while(arr.length<3) arr.push(null); return arr.slice(0,3); }catch(e){ console.error(e); return [null,null,null]; } }
-  function saveSaves(arr){ localStorage.setItem(SAVES_KEY, JSON.stringify(arr.slice(0,3))); }
-  function renderSaveSlots(){
-    saveSlotsContainer.innerHTML=''; const slots=loadSaves();
-    slots.forEach((slot,i)=>{
-      const el=document.createElement('div'); el.className='save-slot';
-      const mini=document.createElement('div'); mini.className='save-mini';
-      for(let r=0;r<7;r++){ for(let c=0;c<7;c++){ const sc=document.createElement('div'); sc.className='s-cell'; if(slot && slot.placedCells && slot.placedCells[`${r},${c}`]) sc.classList.add('on'); mini.appendChild(sc); } }
-      const meta=document.createElement('div'); meta.className='save-meta';
-      const nameInput=document.createElement('input'); nameInput.className='save-input'; nameInput.value = slot ? slot.name : `Slot ${i+1}`;
-      const infoLine=document.createElement('div'); infoLine.style.color='#9fb6d4'; infoLine.style.fontSize='12px'; infoLine.textContent = slot ? `RR: ${slot.total||0}` : 'Empty';
-      const controls=document.createElement('div'); controls.className='save-controls';
-      const saveBtn=document.createElement('button'); saveBtn.textContent = slot ? 'Overwrite' : 'Save';
-      const loadBtn=document.createElement('button'); loadBtn.textContent = 'Load';
-      const delBtn=document.createElement('button'); delBtn.textContent = 'Delete';
-      controls.appendChild(saveBtn); controls.appendChild(loadBtn); controls.appendChild(delBtn);
-      meta.appendChild(nameInput); meta.appendChild(infoLine); meta.appendChild(controls);
-      el.appendChild(mini); el.appendChild(meta); saveSlotsContainer.appendChild(el);
+  // QUICK PRE-CHECK 2: connected component sizes
+  // Compute sizes of connected components of unlocked cells (4-neighbor).
+  function computeUnlockedComponents(){
+    const compSizes = [];
+    const seen = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
+    for(let r=0;r<ROWS;r++){
+      for(let c=0;c<COLS;c++){
+        if(!window.unlocked[r][c] || seen[r][c]) continue;
+        // BFS
+        let size = 0;
+        const q = [[r,c]];
+        seen[r][c] = true;
+        while(q.length){
+          const [cr,cc] = q.shift();
+          size++;
+          const nbrs = [[cr-1,cc],[cr+1,cc],[cr,cc-1],[cr,cc+1]];
+          for(const [nr,nc] of nbrs){
+            if(nr>=0 && nr<ROWS && nc>=0 && nc<COLS && !seen[nr][nc] && window.unlocked[nr][nc]){
+              seen[nr][nc] = true;
+              q.push([nr,nc]);
+            }
+          }
+        }
+        compSizes.push(size);
+      }
+    }
+    return compSizes;
+  }
 
-      saveBtn.addEventListener('click', ()=>{
-        if(!hasSolution || Object.keys(placedCells).length===0){ alert('No solution to save. Solve first.'); return; }
-        // Confirm overwrite if slot occupied
-        const arr=loadSaves();
-        if(arr[i]){
-          const ok = confirm(`Overwrite saved slot "${(arr[i].name||`Slot ${i+1}`)}"?`);
+  const compSizes = computeUnlockedComponents();
+  if (compSizes.length > 0) {
+    // smallest piece size among selected non-unique pieces (unique is large; include it if present)
+    const minPieceSize = Math.min(...instances.map(i => i.size || Infinity));
+    const tinyComp = compSizes.find(sz => sz > 0 && sz < minPieceSize);
+    if (tinyComp) {
+      showInvalidSelection(`There is a small disconnected unlocked region (${tinyComp} tile${tinyComp>1?'s':''}) smaller than the smallest selected piece (${minPieceSize}).`);
+      clearIncludedList();
+      return;
+    }
+  }
+
+  // Generate placements for each instance (this was the existing logic)
+  const placementsByInstance = instances.map(inst => {
+    if (inst.rarity === 'unique') {
+      const rep = window.uniqueTypes.find(u => u.baseName === inst.baseName) || window.uniqueTypes.find(u => u.baseName === inst.shapeId) || { cells: inst.cells || [[0,0]] };
+      const tempShape = { id: rep.id, baseName: inst.baseName || inst.shapeId, cells: rep.cells };
+      return generatePlacementsForShape(tempShape);
+    } else {
+      const st = window.shapeTypes.find(s => s.id === inst.shapeId);
+      return st ? generatePlacementsForShape(st) : [];
+    }
+  });
+
+  // If any forced piece (super/unique) has zero placements, report immediately
+  for (let i = 0; i < instances.length; i++) {
+    const inst = instances[i];
+    if ((inst.rarity === 'super' || inst.rarity === 'unique') && placementsByInstance[i].length === 0) {
+      showInvalidSelection(`One or more ${inst.rarity === 'super' ? 'Super Epic' : 'Unique'} pieces have no valid placement on the current unlocked grid. They must be placeable.`);
+      clearIncludedList();
+      return;
+    }
+  }
+
+  const anyPlacement = placementsByInstance.some(arr => arr.length > 0);
+  if (!anyPlacement) {
+    showInvalidSelection('No valid placement exists for any selected piece on the current unlocked grid.');
+    clearIncludedList();
+    return;
+  }
+
+  // Parse selected dualSet targets (existing logic)
+  let requiredSet1 = 0, requiredSet2 = 0;
+  const sel = dualSetSelect.value;
+  if (sel && sel !== 'none') {
+    const parts = ('' + sel).split('-').map(x => parseInt(x, 10) || 0);
+    if (parts.length === 2) {
+      requiredSet1 = Math.max(0, parts[0]);
+      requiredSet2 = Math.max(0, parts[1]);
+    }
+  }
+  if (requiredSet1 + requiredSet2 > totalUnlocked) {
+    showInvalidSelection('Selected Dual Set Bonus cannot be satisfied with current unlocked tiles.');
+    return;
+  }
+
+  // Re-order instances for search (existing heuristic)
+  const idxs = instances.map((inst, idx) => ({
+    idx,
+    rarityOrder: inst.rarity === 'super' ? 0 : (inst.rarity === 'unique' ? 0 : (inst.rarity === 'epic' ? 1 : 2)),
+    opts: placementsByInstance[idx].length || 0
+  }));
+  idxs.sort((a, b) => a.rarityOrder - b.rarityOrder || a.opts - b.opts);
+  const indexMap = idxs.map(o => o.idx);
+
+  function placeAdds(placement){ return placement.cells.map(([r,c]) => `${r},${c}`); }
+
+  function computeScores(curTiles, uniqueIncluded){
+    const rrRare = curTiles.set1.rare * RARITY_VALUES.rare + curTiles.set2.rare * RARITY_VALUES.rare;
+    const rrEpic = curTiles.set1.epic * RARITY_VALUES.epic + curTiles.set2.epic * RARITY_VALUES.epic;
+    const rrSuper = curTiles.set1.super * RARITY_VALUES.super + curTiles.set2.super * RARITY_VALUES.super;
+    const rrSum = rrRare + rrEpic + rrSuper;
+    const total1 = curTiles.set1.rare + curTiles.set1.epic + curTiles.set1.super;
+    const total2 = curTiles.set2.rare + curTiles.set2.epic + curTiles.set2.super;
+    const overflow = Math.max(0, total1 - 21);
+    const set1ForBonus = Math.min(total1, 21);
+    const set2ForBonus = total2 + overflow;
+    const setBonus1 = computeSetBonus(set1ForBonus);
+    const setBonus2 = computeSetBonus(set2ForBonus);
+    const uniqueBonus = uniqueIncluded ? RARITY_VALUES.unique : 0;
+    return { rrSum, setBonus1, setBonus2, total1, total2, uniqueBonus };
+  }
+
+  // Solver wrapper that will set a timed-out flag if time budget exceeded
+  let anyTimedOut = false;
+
+  function solveVariant(timeBudgetMs = 1000, allowRares = true){
+    const start = Date.now();
+    const used = new Set();
+    let best = { actualTotal:-1, placements:[], tilesByRarityBySet:{set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0}}, rrSum:0, setBonus1:0, setBonus2:0, uniqueIncluded:false, supersPlaced:0, epicsPlaced:0 };
+
+    function backtrack(pos, curTiles, chosen, uniqueIncluded){
+      // Enforce time budget for this variant
+      if (Date.now() - start > timeBudgetMs) {
+        anyTimedOut = true;
+        return;
+      }
+      if (pos >= indexMap.length) {
+        const mandatorySupers = instances.filter(x => x.rarity === 'super').length;
+        const mandatoryUnique = window.includeUnique ? instances.filter(x => x.rarity === 'unique').length : 0;
+        const supersPlaced = curTiles.set1.super + curTiles.set2.super;
+        if (supersPlaced < mandatorySupers) return;
+        if (mandatoryUnique > 0 && !uniqueIncluded) return;
+
+        const total1 = curTiles.set1.rare + curTiles.set1.epic + curTiles.set1.super;
+        const total2 = curTiles.set2.rare + curTiles.set2.epic + curTiles.set2.super;
+        if (total1 < requiredSet1) return;
+        if (total2 < requiredSet2) return;
+
+        const sc = computeScores(curTiles, uniqueIncluded);
+        const actualTotal = sc.rrSum + sc.setBonus1 + sc.setBonus2 + sc.uniqueBonus;
+        const epicsPlaced = curTiles.set1.epic + curTiles.set2.epic;
+
+        let better = false;
+        if (actualTotal > best.actualTotal) better = true;
+        else if (actualTotal === best.actualTotal) {
+          if (supersPlaced > (best.supersPlaced || 0)) better = true;
+          else if (supersPlaced === (best.supersPlaced || 0)) {
+            if (epicsPlaced > (best.epicsPlaced || 0)) better = true;
+            else if (epicsPlaced === (best.epicsPlaced || 0)) {
+              const raresPlaced = curTiles.set1.rare + curTiles.set2.rare;
+              const bestRares = best.tilesByRarityBySet ? (best.tilesByRarityBySet.set1.rare + best.tilesByRarityBySet.set2.rare) : Infinity;
+              if (raresPlaced < bestRares) better = true;
+            }
+          }
+        }
+
+        if (better) {
+          best.actualTotal = actualTotal;
+          best.rrSum = sc.rrSum;
+          best.setBonus1 = sc.setBonus1;
+          best.setBonus2 = sc.setBonus2;
+          best.uniqueIncluded = uniqueIncluded;
+          best.tilesByRarityBySet = JSON.parse(JSON.stringify(curTiles));
+          best.placements = chosen.slice();
+          best.supersPlaced = supersPlaced;
+          best.epicsPlaced = epicsPlaced;
+        }
+        return;
+      }
+
+      const instIdx = indexMap[pos];
+      const inst = instances[instIdx];
+      const opts = placementsByInstance[instIdx];
+      const isRare = inst.rarity === 'rare';
+      const isUnique = inst.rarity === 'unique';
+      const mandatory = inst.rarity === 'super' || inst.rarity === 'unique';
+
+      for (const p of opts) {
+        if (isRare && !allowRares) continue;
+        const keys = placeAdds(p); let conflict = false;
+        for (const k of keys) if (used.has(k)) { conflict = true; break; }
+        if (conflict) continue;
+        for (const k of keys) used.add(k);
+        const target = inst.set === 2 ? 'set2' : 'set1';
+        if (!isUnique) curTiles[target][inst.rarity] += inst.size;
+        chosen.push({ iid: inst.iid, shapeId: inst.shapeId, rarity: inst.rarity, placement: p, set: inst.set });
+        backtrack(pos + 1, curTiles, chosen, uniqueIncluded || isUnique);
+        chosen.pop();
+        if (!isUnique) curTiles[target][inst.rarity] -= inst.size;
+        for (const k of keys) used.delete(k);
+        // Time check after unwinding to allow graceful exit
+        if (Date.now() - start > timeBudgetMs) {
+          anyTimedOut = true;
+          return;
+        }
+      }
+      if (!mandatory) backtrack(pos + 1, curTiles, chosen, uniqueIncluded);
+    }
+
+    backtrack(0, { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, [], false);
+    return best;
+  }
+
+  // Try several variants with reasonable time slices (existing approach)
+  const t = Math.max(200, Math.floor(timeoutMs / 3));
+  const a = solveVariant(t, false);
+  const a2 = solveVariant(t, true);
+  const b = solveVariant(t, false);
+  const b2 = solveVariant(t, true);
+  const cand = [a2,b2,a,b].filter(c => c && c.placements && c.placements.length > 0);
+
+  // If no candidate found and solver ever timed out, surface a different message
+  if (cand.length === 0) {
+    if (anyTimedOut) {
+      showInvalidSelection('Search timed out — a tiling may exist but the solver did not finish. Try removing pieces, enabling fewer rares, or increasing the timeout.');
+    } else {
+      showInvalidSelection('No valid tiling found (that satisfies the constraints).');
+    }
+    clearIncludedList();
+    return;
+  }
+
+  // Pick best candidate (existing tie-breakers already present)
+  cand.sort((x,y)=>{
+    if (x.actualTotal !== y.actualTotal) return y.actualTotal - x.actualTotal;
+    if ((x.supersPlaced || 0) !== (y.supersPlaced || 0)) return (y.supersPlaced || 0) - (x.supersPlaced || 0);
+    if ((x.epicsPlaced || 0) !== (y.epicsPlaced || 0)) return (y.epicsPlaced || 0) - (x.epicsPlaced || 0);
+    return 0;
+  });
+  const best = cand[0];
+
+  const bestTotal1 = (best.tilesByRarityBySet && best.tilesByRarityBySet.set1) ? (best.tilesByRarityBySet.set1.rare + best.tilesByRarityBySet.set1.epic + best.tilesByRarityBySet.set1.super) : 0;
+  const bestTotal2 = (best.tilesByRarityBySet && best.tilesByRarityBySet.set2) ? (best.tilesByRarityBySet.set2.rare + best.tilesByRarityBySet.set2.epic + best.tilesByRarityBySet.set2.super) : 0;
+  if (bestTotal1 < requiredSet1 || bestTotal2 < requiredSet2) {
+    showInvalidSelection('No tiling found that satisfies the selected Dual Set Bonus targets.');
+    return;
+  }
+
+  // Commit placements to global placedCells (existing UI plumbing)
+  window.placedCells = {};
+  for (let i = 0; i < best.placements.length; i++) {
+    const p = best.placements[i];
+    const pid = 'P' + (i + 1);
+    for (const [r,c] of p.placement.cells) {
+      window.placedCells[`${r},${c}`] = { pid, iid: p.iid, shapeId: p.shapeId, rarity: p.rarity, set: p.set, colorClass: sizeToColorClassForPlacement(p) };
+    }
+  }
+  updateScoreboard(best.tilesByRarityBySet || { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, best.setBonus1 || 0, best.setBonus2 || 0);
+  window.hasSolution = true;
+  renderGrid();
+  placementsEl.innerHTML = '';
+  const displayTotal = (best.rrSum || 0) + (best.setBonus1 || 0) + (best.setBonus2 || 0) + (best.uniqueIncluded ? RARITY_VALUES.unique : 0);
+  const suffix = best.uniqueIncluded ? ' — Unique shape included' : '';
+  placementsEl.appendChild(document.createTextNode(`Best Total: ${displayTotal}${suffix}`));
+  renderIncludedList(best.placements);
+  updateExtraIndicator();
+}
+/* ---------- Save/load (robust) ---------- */
+function sanitizeSlot(slot){
+  if(!slot || typeof slot !== 'object') return null;
+  const out = {};
+  out.name = typeof slot.name === 'string' ? slot.name : '';
+  out.placedCells = (slot.placedCells && typeof slot.placedCells === 'object') ? slot.placedCells : {};
+  out.tilesByRarity = (slot.tilesByRarity && typeof slot.tilesByRarity === 'object') ? slot.tilesByRarity : { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} };
+  out.total = typeof slot.total === 'number' ? slot.total : 0;
+  out.timestamp = typeof slot.timestamp === 'number' ? slot.timestamp : 0;
+  out.unlocked = Array.isArray(slot.unlocked) ? slot.unlocked : null;
+  out.selectedInstances = Array.isArray(slot.selectedInstances) ? slot.selectedInstances : null;
+  out.nextInstanceId = typeof slot.nextInstanceId === 'number' ? slot.nextInstanceId : null;
+  out.setBonus1 = typeof slot.setBonus1 === 'number' ? slot.setBonus1 : 0;
+  out.setBonus2 = typeof slot.setBonus2 === 'number' ? slot.setBonus2 : 0;
+  out.includeUnique = !!slot.includeUnique;
+  return out;
+}
+function loadSaves(){
+  try{
+    const raw = localStorage.getItem(SAVES_KEY);
+    if(!raw) return [null,null,null];
+    const parsed = JSON.parse(raw);
+    if(!Array.isArray(parsed)) return [null,null,null];
+    const out = [];
+    for(let i=0;i<3;i++){
+      const s = parsed[i];
+      out.push(s ? sanitizeSlot(s) : null);
+    }
+    return out;
+  }catch(e){
+    console.warn('Failed to parse saved slots, returning empty slots', e);
+    return [null,null,null];
+  }
+}
+function saveSaves(arr){
+  try{
+    const toSave = [null,null,null];
+    for(let i=0;i<3;i++){
+      toSave[i] = arr[i] ? arr[i] : null;
+    }
+    localStorage.setItem(SAVES_KEY, JSON.stringify(toSave));
+  }catch(e){
+    console.error('Failed to save slots', e);
+  }
+}
+
+function renderSaveSlots(){
+  let container = document.getElementById('saveSlots');
+  if(!container){
+    console.warn('saveSlots container missing - creating one');
+    container = document.createElement('div'); container.id = 'saveSlots';
+    const target = document.getElementById('scoreAndSaves') || document.querySelector('.info-panel');
+    if(target) target.appendChild(container);
+    else document.body.appendChild(container);
+  }
+  container.innerHTML = '';
+  const slots = loadSaves();
+  while(slots.length < 3) slots.push(null);
+
+  for(let i=0;i<3;i++){
+    const slot = slots[i];
+    const el = document.createElement('div'); el.className = 'save-slot';
+
+    const mini = document.createElement('div'); mini.className='save-mini';
+    for(let r=0;r<7;r++){
+      for(let c=0;c<7;c++){
+        const sc = document.createElement('div'); sc.className='s-cell';
+        if(slot && slot.placedCells && typeof slot.placedCells === 'object' && slot.placedCells[`${r},${c}`]) sc.classList.add('on');
+        mini.appendChild(sc);
+      }
+    }
+    el.appendChild(mini);
+
+    const meta = document.createElement('div'); meta.className='save-meta';
+    const nameInput = document.createElement('input'); nameInput.className='save-input';
+    nameInput.value = slot && slot.name ? slot.name : `Slot ${i+1}`;
+
+    const infoLine = document.createElement('div'); infoLine.style.color = '#9fb6d4'; infoLine.style.fontSize = '12px';
+    infoLine.textContent = slot && typeof slot.total === 'number' && slot.total > 0 ? `RR: ${slot.total}` : 'Empty';
+
+    const controls = document.createElement('div'); controls.className='save-controls';
+    const saveBtn = document.createElement('button'); saveBtn.textContent = slot ? 'Overwrite' : 'Save';
+    const loadBtn = document.createElement('button'); loadBtn.textContent = 'Load';
+    const delBtn = document.createElement('button'); delBtn.textContent = 'Delete';
+    controls.appendChild(saveBtn); controls.appendChild(loadBtn); controls.appendChild(delBtn);
+
+    meta.appendChild(nameInput); meta.appendChild(infoLine); meta.appendChild(controls);
+    el.appendChild(meta);
+    container.appendChild(el);
+
+    saveBtn.addEventListener('click', ()=>{
+      try{
+        const arr = loadSaves();
+        const existing = arr[i];
+        if(existing){
+          const ok = confirm(`Overwrite saved slot "${existing.name || `Slot ${i+1}`}"?`);
           if(!ok) return;
         }
-        const name=nameInput.value||`Slot ${i+1}`;
-        const placedCopy=JSON.parse(JSON.stringify(placedCells));
+        const currentPlaced = window.placedCells ? JSON.parse(JSON.stringify(window.placedCells)) : {};
         const tilesByRarity = {
-          set1:{ rare: parseInt(document.getElementById('sb_tiles1_rare').textContent)||0, epic: parseInt(document.getElementById('sb_tiles1_epic').textContent)||0, super: parseInt(document.getElementById('sb_tiles1_super').textContent)||0 },
-          set2:{ rare: parseInt(document.getElementById('sb_tiles2_rare').textContent)||0, epic: parseInt(document.getElementById('sb_tiles2_epic').textContent)||0, super: parseInt(document.getElementById('sb_tiles2_super').textContent)||0 }
+          set1: {
+            rare: parseInt(document.getElementById('sb_tiles1_rare').textContent)||0,
+            epic: parseInt(document.getElementById('sb_tiles1_epic').textContent)||0,
+            super: parseInt(document.getElementById('sb_tiles1_super').textContent)||0
+          },
+          set2: {
+            rare: parseInt(document.getElementById('sb_tiles2_rare').textContent)||0,
+            epic: parseInt(document.getElementById('sb_tiles2_epic').textContent)||0,
+            super: parseInt(document.getElementById('sb_tiles2_super').textContent)||0
+          }
         };
-        const totalMatch = placementsEl.textContent.match(/Best Total:\s*(\d+)/); const total = totalMatch ? parseInt(totalMatch[1]) : 0;
-        // capture set bonuses from scoreboard display
-        const setBonus1 = parseInt(document.getElementById('sb_set1_rare').textContent) || 0;
-        const setBonus2 = parseInt(document.getElementById('sb_set2_rare').textContent) || 0;
-        // Save unlocked grid and selectedInstances and nextInstanceId to allow restoring selection and rarities
-        const unlockedCopy = unlocked.map(row => row.slice());
-        const selectedCopy = JSON.parse(JSON.stringify(selectedInstances));
-        arr[i] = { name, placedCells: placedCopy, tilesByRarity, total, timestamp: Date.now(), unlocked: unlockedCopy, selectedInstances: selectedCopy, nextInstanceId, setBonus1, setBonus2 };
-        saveSaves(arr); renderSaveSlots();
-      });
-      loadBtn.addEventListener('click', ()=>{
-        const arr=loadSaves(); const s=arr[i]; if(!s){ alert('Empty slot'); return; }
-        // Restore unlocked grid and selected instances as saved
-        if(s.unlocked && Array.isArray(s.unlocked) && s.unlocked.length===ROWS){
-          unlocked = s.unlocked.map(row => row.slice());
-        }
-        if(s.selectedInstances && Array.isArray(s.selectedInstances)){
-          selectedInstances = JSON.parse(JSON.stringify(s.selectedInstances));
-          // ensure nextInstanceId is set so future adds don't collide
-          if(typeof s.nextInstanceId === 'number' && s.nextInstanceId > nextInstanceId) nextInstanceId = s.nextInstanceId;
+        const totalMatch = document.getElementById('placements').textContent.match(/Best Total:\s*(\d+)/);
+        const total = totalMatch ? parseInt(totalMatch[1]) : 0;
+        const unlockedCopy = Array.isArray(window.unlocked) ? window.unlocked.map(row => row.slice()) : null;
+        const selectedCopy = Array.isArray(window.selectedInstances) ? JSON.parse(JSON.stringify(window.selectedInstances)) : null;
+        const name = nameInput.value.trim() || `Slot ${i+1}`;
+        const newSlot = {
+          name,
+          placedCells: currentPlaced,
+          tilesByRarity,
+          total,
+          timestamp: Date.now(),
+          unlocked: unlockedCopy,
+          selectedInstances: selectedCopy,
+          nextInstanceId: typeof window.nextInstanceId === 'number' ? window.nextInstanceId : null,
+          setBonus1: parseInt(document.getElementById('sb_set1_rare').textContent) || 0,
+          setBonus2: parseInt(document.getElementById('sb_set2_rare').textContent) || 0,
+          includeUnique: !!window.includeUnique
+        };
+        arr[i] = newSlot;
+        saveSaves(arr);
+        renderSaveSlots();
+      }catch(err){
+        console.error('Save failed', err);
+        alert('Save failed — see console for details.');
+      }
+    });
+
+    loadBtn.addEventListener('click', ()=>{
+      try{
+        const arr = loadSaves();
+        const s = arr[i];
+        if(!s){ alert('Empty slot'); return; }
+        if(Array.isArray(s.unlocked) && s.unlocked.length === ROWS) window.unlocked = s.unlocked.map(row => row.slice());
+        if(Array.isArray(s.selectedInstances)){
+          window.selectedInstances = JSON.parse(JSON.stringify(s.selectedInstances));
+          if(typeof s.nextInstanceId === 'number' && s.nextInstanceId > (window.nextInstanceId || 0)) window.nextInstanceId = s.nextInstanceId;
           else {
-            // find max iid numeric and set nextInstanceId appropriately
-            const maxIid = selectedInstances.reduce((mx,si)=> {
+            const maxIid = window.selectedInstances.reduce((mx,si)=> {
               const n = parseInt((''+si.iid).replace(/^I/,''));
               return isNaN(n) ? mx : Math.max(mx,n);
             }, 0);
-            nextInstanceId = Math.max(nextInstanceId, maxIid + 1);
+            window.nextInstanceId = Math.max(window.nextInstanceId || 1, maxIid + 1);
           }
         } else {
-          selectedInstances = [];
+          window.selectedInstances = [];
         }
+        if(s.placedCells && typeof s.placedCells === 'object'){
+          window.placedCells = JSON.parse(JSON.stringify(s.placedCells));
+          window.hasSolution = Object.keys(window.placedCells).length > 0;
+        } else {
+          window.placedCells = {};
+          window.hasSolution = false;
+        }
+        window.includeUnique = !!s.includeUnique;
+        includeUniqueToggle.checked = !!s.includeUnique;
 
-        // Restore placedCells and scoreboard
-        placedCells = JSON.parse(JSON.stringify(s.placedCells || {})); hasSolution=true;
-        const tilesByRarity = s.tilesByRarity || { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} };
-        const setB1 = s.setBonus1 || 0;
-        const setB2 = s.setBonus2 || 0;
-        renderPalette(); renderSelectedList();
-        renderGrid(); updateScoreboard(tilesByRarity, setB1, setB2);
-        // reconstruct included placements approximately
-        const byPid={};
-        for(const k of Object.keys(placedCells)){ const p=placedCells[k]; if(!byPid[p.pid]) byPid[p.pid]={ iid:p.iid, shapeId:p.shapeId||'S1', rarity:p.rarity, placement:{cells:[]}, set:p.set }; const [r,c]=k.split(',').map(Number); byPid[p.pid].placement.cells.push([r,c]); }
-        const placements=[]; for(const pid of Object.keys(byPid)) placements.push(byPid[pid]);
-        renderIncludedList(placements); updateExtraIndicator(); updateDualSetBonusOptions();
-      });
-      delBtn.addEventListener('click', ()=>{ const arr=loadSaves(); if(!arr[i]) return; const ok = confirm(`Delete saved slot "${(arr[i].name||`Slot ${i+1}`)}"?`); if(!ok) return; arr[i]=null; saveSaves(arr); renderSaveSlots(); });
+        if(s.tilesByRarity){
+          try{ updateScoreboard(s.tilesByRarity, s.setBonus1 || 0, s.setBonus2 || 0); }catch(e){ console.warn('updateScoreboard failed during load:', e); }
+        }
+        try{ buildUniqueTypes(); }catch(e){ console.warn(e); }
+        try{ renderPalette(); }catch(e){ console.warn(e); }
+        try{ renderSelectedList(); }catch(e){ console.warn(e); }
+        try{ renderGrid(); }catch(e){ console.warn(e); }
+
+        try{
+          const byPid = {};
+          for(const k of Object.keys(window.placedCells || {})){
+            const p = window.placedCells[k];
+            if(!byPid[p.pid]) byPid[p.pid] = { iid:p.iid, shapeId:p.shapeId||'S1', rarity:p.rarity, placement:{cells:[]}, set:p.set };
+            const [r,c] = k.split(',').map(Number);
+            byPid[p.pid].placement.cells.push([r,c]);
+          }
+          const placements = Object.keys(byPid).map(k=>byPid[k]);
+          if(typeof renderIncludedList === 'function') renderIncludedList(placements);
+        }catch(e){ console.warn('Could not populate includedList after load', e); }
+
+        try{ updateExtraIndicator(); }catch(e){}
+        try{ updateDualSetBonusOptions(); }catch(e){}
+        try{ updateUniqueContainersVisibility(); }catch(e){}
+
+        const old = placementsEl.innerHTML;
+        placementsEl.innerHTML = `<div style="color:#cfe8ff">Loaded: ${s.name || `Slot ${i+1}`}</div>`;
+        setTimeout(()=> { placementsEl.innerHTML = old; }, 1100);
+      }catch(err){
+        console.error('Load failed', err);
+        alert('Load failed — see console for details.');
+      }
+    });
+
+    delBtn.addEventListener('click', ()=>{
+      try{
+        const arr = loadSaves();
+        if(!arr[i]){ alert('Slot already empty.'); return; }
+        const ok = confirm(`Delete saved slot "${arr[i].name || `Slot ${i+1}`}"? This cannot be undone.`);
+        if(!ok) return;
+        arr[i] = null;
+        saveSaves(arr);
+        renderSaveSlots();
+      }catch(err){
+        console.error('Delete failed', err);
+        alert('Delete failed — see console for details.');
+      }
     });
   }
+}
 
-  // UI wiring
-  document.getElementById('solveBtn').addEventListener('click', ()=>{ placementsEl.innerHTML='Optimizing...'; setTimeout(()=>runSolveOptimize(3500),50); });
-  document.getElementById('resetGrid').addEventListener('click', ()=>{
-    // Reset: delete all shapes shown on the grid AND shapes in "Shapes selected" and revert the current grid back to original state.
-    selectedInstances = []; renderPalette(); renderSelectedList();
-    clearSolution();
-    applyDefaultCenter();
-    renderGrid();
-    updateDualSetBonusOptions();
-    updateExtraIndicator();
-    setTimeout(adjustInfoPanelPosition,30);
+/* ---------- Dual set bonus UI ---------- */
+function generateDualCombos(totalUnlocked){
+  const result = [];
+  const allowed = SET_THRESHOLDS.filter(x => x <= totalUnlocked);
+  for(let i = allowed.length-1; i>=0; i--){
+    for(let j = i; j>=0; j--){
+      const a = allowed[i], b = allowed[j];
+      if(a + b <= totalUnlocked){
+        result.push([a,b]);
+      }
+    }
+  }
+  return result;
+}
+function updateDualSetBonusOptions(){
+  const total = countUnlockedTiles();
+  if(total < 24){
+    dualSetSelect.disabled = true;
+    dualSetHelp.textContent = 'Locked — enable by unlocking at least 24 tiles.';
+    if(dualSetSelect.value !== 'none') dualSetSelect.value = 'none';
+    dualSetSelect.innerHTML = '<option value="none">None</option>';
+    return;
+  }
+  const combos = generateDualCombos(total);
+  dualSetSelect.innerHTML = '';
+  const noneOpt = document.createElement('option'); noneOpt.value = 'none'; noneOpt.textContent = 'None'; dualSetSelect.appendChild(noneOpt);
+  combos.forEach(([a,b])=>{
+    const opt = document.createElement('option');
+    opt.value = `${a}-${b}`;
+    opt.textContent = `${a}-${b}`;
+    dualSetSelect.appendChild(opt);
   });
-  document.getElementById('clearAll').addEventListener('click', ()=>{
-    // Clear: deletes all shapes shown on the grid and shapes in "Shapes selected" while keeping current grid.
-    selectedInstances=[];
-    renderPalette();
-    renderSelectedList();
-    clearSolution();
-    placementsEl.innerHTML='';
-    updateScoreboard();
-    clearIncludedList();
-    updateDualSetBonusOptions();
-    setTimeout(adjustInfoPanelPosition,30);
-  });
-  window.addEventListener('resize', ()=> setTimeout(adjustInfoPanelPosition,30));
+  dualSetSelect.disabled = false;
+  dualSetHelp.textContent = `Select a target split for set bonuses (total unlocked: ${total}).`;
+}
 
-  // init functions: apply center, build shapes, render everything
-  function applyDefaultCenter(){ unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false)); const startR=Math.floor((ROWS-3)/2), startC=Math.floor((COLS-5)/2); for(let r=startR;r<startR+3;r++) for(let c=startC;c<startC+5;c++) unlocked[r][c]=true; }
+/* ---------- Helpers: reset, clear, setActive ---------- */
+function applyDefaultCenter(){
+  window.unlocked = Array.from({length:ROWS}, ()=>Array.from({length:COLS}, ()=>false));
+  const startR = Math.floor((ROWS-3)/2), startC = Math.floor((COLS-5)/2);
+  for(let r=startR;r<startR+3;r++) for(let c=startC;c<startC+5;c++) window.unlocked[r][c] = true;
+  renderGrid(); updateUnlockedCounter();
+}
+function clearSolution(){
+  window.placedCells = {};
+  window.hasSolution = false;
+  placementsEl.innerHTML = '';
+  clearIncludedList();
+  updateScoreboard({ set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, 0, 0);
+  clearHighlights();
+  renderGrid();
+  updateExtraIndicator();
+}
+function clearSelections(){
+  window.selectedInstances = [];
+  window.currentUniqueIid = null;
+  window.includeUnique = false;
+  includeUniqueToggle.checked = false;
+  renderPalette();
+  renderSelectedList();
+}
+function setActiveSet(n){
+  window.activeSet = n;
+  if(n===1){
+    selectSet1Btn.setAttribute('aria-pressed','true');
+    selectSet2Btn.setAttribute('aria-pressed','false');
+    selectSet1Btn.classList.remove('secondary');
+    selectSet2Btn.classList.add('secondary');
+  } else {
+    selectSet2Btn.setAttribute('aria-pressed','true');
+    selectSet1Btn.setAttribute('aria-pressed','false');
+    selectSet2Btn.classList.remove('secondary');
+    selectSet1Btn.classList.add('secondary');
+  }
+}
 
-  // boot
-  applyDefaultCenter(); buildShapeTypes(); renderPalette(); renderGrid(); renderSelectedList(); updateScoreboard(); clearIncludedList(); updateExtraIndicator(); renderSaveSlots(); updateDualSetBonusOptions(); setTimeout(adjustInfoPanelPosition,50);
+/* Wire UI events */
+selectSet1Btn.addEventListener('click', ()=> setActiveSet(1));
+selectSet2Btn.addEventListener('click', ()=> setActiveSet(2));
+
+document.getElementById('solveBtn').addEventListener('click', ()=>{ placementsEl.innerHTML='Optimizing...'; setTimeout(()=>{ try{ runSolveOptimize(3500); }catch(err){ console.error('runSolveOptimize uncaught', err); placementsEl.innerHTML = `<div style="color:#fecaca;font-weight:700">Solver error — see console</div><div style="color:#9fb6d4;margin-top:6px">${String(err)}</div>`;} },50); });
+
+// Reset: restore default unlocked pattern, clear selections and solution, and select Set 1
+document.getElementById('resetGrid').addEventListener('click', ()=>{
+  clearSelections();
+  clearSolution();
+  applyDefaultCenter();
+  setActiveSet(1);
+  updateDualSetBonusOptions();
+  updateExtraIndicator();
+  setTimeout(adjustInfoPanelPosition,30);
 });
+
+// Clear: clear selections and solution but keep current unlocked grid; select Set 1
+document.getElementById('clearAll').addEventListener('click', ()=>{
+  clearSelections();
+  clearSolution();
+  setActiveSet(1);
+  updateDualSetBonusOptions();
+  updateExtraIndicator();
+  setTimeout(adjustInfoPanelPosition,30);
+});
+
+includeUniqueToggle.addEventListener('change', (ev)=>{
+  window.includeUnique = !!ev.target.checked;
+  if(!window.includeUnique){
+    for(let i=window.selectedInstances.length-1;i>=0;i--) if(window.selectedInstances[i].rarity==='unique') window.selectedInstances.splice(i,1);
+    window.currentUniqueIid = null;
+  }
+  buildUniqueTypes(); renderPalette(); renderSelectedList(); updateUniqueContainersVisibility();
+});
+
+/* Helpers for layout */
+function adjustInfoPanelPosition(){ const topRow=document.querySelector('.topRow'); if(!topRow.contains(document.getElementById('infoPanel'))) topRow.appendChild(document.getElementById('infoPanel')); }
+
+/* ---------- Boot ---------- */
+applyDefaultCenter();
+buildShapeTypes();
+buildUniqueTypes();
+setActiveSet(1); // ensure Set 1 is active by default
+renderPalette();
+renderGrid();
+renderSelectedList();
+updateScoreboard();
+clearIncludedList();
+updateExtraIndicator();
+renderSaveSlots();
+updateDualSetBonusOptions();
+setTimeout(adjustInfoPanelPosition,50);
+
+/* Expose debug helpers */
+window._renderSaveSlots = renderSaveSlots;
+window._loadSaves = loadSaves;
+window._saveSaves = saveSaves;
 </script>
 </body>
 </html>
