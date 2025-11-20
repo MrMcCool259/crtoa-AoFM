@@ -34,33 +34,44 @@
   .cell.locked{background:#233045;border:1px solid #0f1724;color:#6b7280}
   .cell.unlocked{background:#dbeafe;color:#022c3a;box-shadow:inset 0 -3px 6px rgba(0,0,0,0.06)}
   .cell.placed{color:#022c3a}
-  .cell .tile-label {
+  /* Paste into the <style> section of your HTML (near the .cell rules) */
+.cell .tile-label {
   width:100%;
   height:100%;
   display:flex;
+  flex-direction:column;
   align-items:center;
-  justify-content:space-between;
-  padding:2px 6px;
+  justify-content:center;
+  padding:2px 2px;
   font-size:12px;
   font-weight:700;
   box-sizing:border-box;
   pointer-events:none; /* keep cell click events intact */
+  line-height:1;
 }
-.cell .tile-label-left {
-  text-align:left;
-  flex:0 0 36%;
+
+.tile-label-top {
+  font-size:11px;
   color: rgba(0,0,0,0.9);
+  align-self:center;
+  margin-bottom:2px;
 }
-.cell .tile-label-right {
-  text-align:right;
-  flex:0 0 36%;
-  color: rgba(0,0,0,0.9);
+
+.tile-label-bottom {
+  font-size:12px;
+  color: rgba(0,0,0,0.95);
+  align-self:center;
 }
+
+/* centered U for unique pieces */
 .cell .tile-label-center {
   width:100%;
-  text-align:center;
+  height:100%;
+  display:flex;
+  align-items:center;
+  justify-content:center;
   pointer-events:none;
-  font-weight:700;
+  font-weight:800;
 }
   .placed-red{background:linear-gradient(135deg,#fca5a5,#fecaca); color:#3a0a0a}
   .placed-green{background:linear-gradient(135deg,#86efac,#bbf7d0); color:#03210a}
@@ -516,6 +527,8 @@ function updateUnlockedCounter(){ let cnt=0; for(let r=0;r<ROWS;r++) for(let c=0
 // It shows "set index" on the left and "piece index" on the right (e.g., "1" and "3") for non-unique pieces.
 // Unique pieces show a single centered "U" and are not split.
 
+// Replace your existing function renderGrid() with this version.
+// Top shows "S-#" (set label), bottom shows "P#" (piece index). Unique remains centered "U".
 function renderGrid(){
   gridEl.innerHTML = '';
   for(let r=0;r<ROWS;r++){
@@ -527,6 +540,7 @@ function renderGrid(){
       div.className = 'cell ' + (placed ? 'placed' : (window.unlocked[r][c] ? 'unlocked' : 'locked'));
 
       if(placed){
+        // preserve existing color / outline classes
         if(placed.colorClass) div.classList.add(placed.colorClass);
         if(placed.rarity === 'rare') div.classList.add('outline-rare');
         else if(placed.rarity === 'epic') div.classList.add('outline-epic');
@@ -535,44 +549,55 @@ function renderGrid(){
 
         div.dataset.rarity = placed.rarity;
 
-        // Unique: centered "U"
         if(placed.rarity === 'unique'){
-          const span = document.createElement('div');
-          span.className = 'tile-label-center';
-          span.textContent = 'U';
-          div.appendChild(span);
+          // Unique pieces: centered "U"
+          const center = document.createElement('div');
+          center.className = 'tile-label-center';
+          center.textContent = 'U';
+          div.appendChild(center);
         } else {
-          // Non-unique: left = "S-#", right = "P#"
-          // Set label: prefer explicit set number if available
-          const setLabel = (typeof placed.set === 'number' && (placed.set === 1 || placed.set === 2))
-            ? `S-${placed.set}`
-            : (placed.displayLabel ? placed.displayLabel : '');
+          // Non-unique: top = "S-#", bottom = "P#"
 
-          // Piece index: try to use placed.pid if it matches P#, otherwise fall back to iid numeric suffix
-          let pieceIndex = '';
+          // Assemble set label "S-#" when set is known (1 or 2)
+          let setLabel = '';
+          if(typeof placed.set === 'number' && (placed.set === 1 || placed.set === 2)){
+            setLabel = `S-${placed.set}`;
+          } else if(placed.displayLabel && placed.displayLabel.startsWith('S-')){
+            // fallback if displayLabel contains S-#
+            setLabel = placed.displayLabel;
+          }
+
+          // Piece index: prefer placed.pid (P#). If pid missing or not P#, try iid numeric -> P#
+          let pieceLabel = '';
           if(placed.pid){
-            const m = (''+placed.pid).match(/P(\d+)/);
-            if(m) pieceIndex = `P${m[1]}`;
-            else pieceIndex = placed.pid; // if it's already in another form, keep it
+            const m = (''+placed.pid).match(/^P(\d+)$/i);
+            if(m){
+              pieceLabel = `P${m[1]}`;
+            } else {
+              // if pid is not a plain P# (maybe stored differently), use it directly
+              pieceLabel = placed.pid;
+            }
           }
-          if(!pieceIndex && placed.iid){
-            const m2 = (''+placed.iid).match(/I(\d+)/);
-            if(m2) pieceIndex = `P${m2[1]}`; // convert I# -> P#
+          if(!pieceLabel && placed.iid){
+            const m2 = (''+placed.iid).match(/^I(\d+)$/i);
+            if(m2) pieceLabel = `P${m2[1]}`;
           }
-          pieceIndex = pieceIndex || '';
+          pieceLabel = pieceLabel || '';
 
-          // build the two-part label element
+          // Build vertical label wrapper
           const wrapper = document.createElement('div');
           wrapper.className = 'tile-label';
-          const left = document.createElement('div');
-          left.className = 'tile-label-left';
-          left.textContent = setLabel;
-          const right = document.createElement('div');
-          right.className = 'tile-label-right';
-          right.textContent = pieceIndex;
 
-          wrapper.appendChild(left);
-          wrapper.appendChild(right);
+          const top = document.createElement('div');
+          top.className = 'tile-label-top';
+          top.textContent = setLabel;
+
+          const bottom = document.createElement('div');
+          bottom.className = 'tile-label-bottom';
+          bottom.textContent = pieceLabel;
+
+          wrapper.appendChild(top);
+          wrapper.appendChild(bottom);
           div.appendChild(wrapper);
         }
       } else {
