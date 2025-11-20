@@ -139,6 +139,10 @@
   .included-list{display:flex;flex-direction:row;flex-wrap:wrap;gap:8px;align-items:center}
   .included-item{display:flex;flex-direction:row;gap:8px;align-items:center;padding:4px;border-radius:6px;font-size:13px;flex:0 0 auto}
 
+  /* New helper classes to enforce 4-per-row layout in the selected/included panes */
+  .items-rows { display:flex; flex-direction:column; gap:8px; }
+  .items-row { display:flex; gap:8px; }
+
   .scoreboard { width:100%; border-collapse:collapse; font-size:13px; color:var(--accent); margin-bottom:8px }
   .scoreboard th, .scoreboard td { border:1px solid rgba(255,255,255,0.04); padding:6px 8px; text-align:center; }
   .scoreboard .colheader { font-weight:700; }
@@ -323,6 +327,7 @@
    - "Additional placements possible" rows limited to 4 shapes each
    - Shape IDs removed from visible mini-previews in Shapes selected (kept as title on element)
    - All previous robustness, save/load, Unique handling kept
+   - Rows in Set 1 / Set 2 for both "Shapes selected" and "Shapes included..." are limited to 4 items per row and continue row-by-row
 */
 
 const USER_KEY = 'hoangnh1630-rgb';
@@ -624,7 +629,9 @@ function renderPalette(){
   }
 }
 
-/* Selected list renderer — shape id label removed; id kept as title attribute */
+/* Selected list renderer — shape id label removed; id kept as title attribute
+   Modified to limit Set 1 and Set 2 displays to rows with up to 4 items per row (row-by-row stacking).
+*/
 function renderSelectedList(){
   set1ListEl.innerHTML = ''; set2ListEl.innerHTML = ''; uniqueSelectedBox.innerHTML = '';
   if(window.selectedInstances.length===0){
@@ -674,8 +681,30 @@ function renderSelectedList(){
     return item;
   }
 
-  if(s1.length) s1.forEach(inst => set1ListEl.appendChild(createItem(inst))); else set1ListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
-  if(s2.length) s2.forEach(inst => set2ListEl.appendChild(createItem(inst))); else set2ListEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
+  function appendItemsAsRows(containerEl, itemsArr, createFn){
+    containerEl.innerHTML = '';
+    if(!itemsArr || itemsArr.length===0){
+      containerEl.innerHTML = '<div style="color:#9fb6d4">No shapes selected</div>';
+      return;
+    }
+    const perRow = 4;
+    const rowsWrap = document.createElement('div');
+    rowsWrap.className = 'items-rows';
+    for(let i=0;i<itemsArr.length;i+=perRow){
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'items-row';
+      for(let j=i;j<i+perRow && j<itemsArr.length;j++){
+        const node = createFn(itemsArr[j]);
+        rowDiv.appendChild(node);
+      }
+      rowsWrap.appendChild(rowDiv);
+    }
+    containerEl.appendChild(rowsWrap);
+  }
+
+  appendItemsAsRows(set1ListEl, s1, createItem);
+  appendItemsAsRows(set2ListEl, s2, createItem);
+
   if(su.length) su.forEach(inst => uniqueSelectedBox.appendChild(createItem(inst))); else uniqueSelectedBox.innerHTML = '<div style="color:#9fb6d4">No Unique selected</div>';
 
   set1ListEl.ondragover = (ev)=>{ ev.preventDefault(); set1ListEl.classList.add('droppable-over'); };
@@ -758,9 +787,31 @@ function renderIncludedList(placements){
     }
     item.appendChild(mini); return item;
   }
-  if(pSet1.length) pSet1.forEach(p=> includedListSet1El.appendChild(mk(p))); else includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
-  if(pSet2.length) pSet2.forEach(p=> includedListSet2El.appendChild(mk(p))); else includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
-  if(pUnique.length) pUnique.forEach(p=> includedListUniqueEl.appendChild(mk(p))); else includedListUniqueEl.innerHTML = '<div style="color:#9fb6d4">No Unique included</div>';
+
+  function appendIncludedAsRows(containerEl, itemsArr, createFn){
+    containerEl.innerHTML = '';
+    if(!itemsArr || itemsArr.length===0){
+      containerEl.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>';
+      return;
+    }
+    const perRow = 4;
+    const rowsWrap = document.createElement('div');
+    rowsWrap.className = 'items-rows';
+    for(let i=0;i<itemsArr.length;i+=perRow){
+      const rowDiv = document.createElement('div');
+      rowDiv.className = 'items-row';
+      for(let j=i;j<i+perRow && j<itemsArr.length;j++){
+        const node = createFn(itemsArr[j]);
+        rowDiv.appendChild(node);
+      }
+      rowsWrap.appendChild(rowDiv);
+    }
+    containerEl.appendChild(rowsWrap);
+  }
+
+  appendIncludedAsRows(includedListSet1El, pSet1, mk);
+  appendIncludedAsRows(includedListSet2El, pSet2, mk);
+  if(pUnique.length) appendIncludedAsRows(includedListUniqueEl, pUnique, mk); else includedListUniqueEl.innerHTML = '<div style="color:#9fb6d4">No Unique included</div>';
   includedUniqueContainer.style.display = window.includeUnique ? 'block' : 'none';
 }
 function clearIncludedList(){ includedListSet1El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedListSet2El.innerHTML = '<div style="color:#9fb6d4">No shapes in current solution</div>'; includedListUniqueEl.innerHTML = '<div style="color:#9fb6d4">No Unique included</div>'; includedSet1TilesEl.textContent='Tiles: 0'; includedSet2TilesEl.textContent='Tiles: 0'; includedUniqueTilesEl.textContent='Tiles: 0'; }
