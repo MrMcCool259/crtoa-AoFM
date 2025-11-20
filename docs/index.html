@@ -327,7 +327,8 @@
    - "Additional placements possible" rows limited to 4 shapes each
    - Shape IDs removed from visible mini-previews in Shapes selected (kept as title on element)
    - All previous robustness, save/load, Unique handling kept
-   - Rows in Set 1 / Set 2 for both "Shapes selected" and "Shapes included..." are limited to 4 items per row and continue row-by-row
+   - When shapes are shown on grid, the tiles show S-1 or S-2 depending on set (displayLabel), while pid remains unique for internal grouping and save/load
+   - Tetromino-I transforms are explicitly ordered and given preview overrides so S10 = horizontal (1x4) and S11 = vertical (4x1)
 */
 
 const USER_KEY = 'hoangnh1630-rgb';
@@ -411,6 +412,7 @@ const baseShapes = [
   {name:"domino", cells:[[0,0],[0,1]]},
   {name:"tromino-I", cells:[[0,0],[0,1],[0,2]]},
   {name:"tromino-L", cells:[[0,0],[0,1],[1,0]]},
+  // tetromino-I is handled specially so we can ensure S10 and S11 previews/orientations
   {name:"tetromino-I", cells:[[0,0],[0,1],[0,2],[0,3]]},
   {name:"tetromino-O", cells:[[0,0],[0,1],[1,0],[1,1]]},
   {name:"tetromino-T", cells:[[0,1],[1,0],[1,1],[1,2]]},
@@ -445,6 +447,19 @@ function buildShapeTypes(){
   window.shapeTypes = [];
   let sid = 1;
   for(const b of baseShapes){
+    // special-case tetromino-I so we assign its two orientations explicitly and attach preview overrides
+    if(b.name === 'tetromino-I'){
+      // horizontal 1x4
+      const horiz = normalize([[0,0],[0,1],[0,2],[0,3]]);
+      window.shapeTypes.push({ id: 'S'+sid, cells: horiz, baseName: b.name, size: horiz.length, preview: { cols: 4, rows: 1 } });
+      sid++;
+      // vertical 4x1
+      const vert = normalize([[0,0],[1,0],[2,0],[3,0]]);
+      window.shapeTypes.push({ id: 'S'+sid, cells: vert, baseName: b.name, size: vert.length, preview: { cols: 1, rows: 4 } });
+      sid++;
+      continue;
+    }
+
     const transforms = all8_unique(b.cells);
     for(const t of transforms){
       window.shapeTypes.push({ id: 'S'+sid, cells: t, baseName: b.name, size: t.length });
@@ -484,12 +499,15 @@ function renderGrid(){
         else if(placed.rarity === 'super') div.classList.add('outline-super');
         else if(placed.rarity === 'unique') div.classList.add('outline-unique');
         div.dataset.rarity = placed.rarity;
-        div.textContent = placed.pid || '';
+
+        // Show 'U' for Unique pieces; otherwise show the set label (S-1 / S-2) via displayLabel or fallback to pid
+        const label = (placed.rarity === 'unique') ? 'U' : (placed.displayLabel || placed.pid || '');
+        div.textContent = label;
       } else {
         div.textContent = '';
       }
       div.dataset.rc = k;
-      div.title = placed ? `Placed ${placed && placed.pid ? placed.pid : ''} (set ${placed && placed.set ? placed.set : ''})` : (window.unlocked[r][c] ? 'Unlocked' : 'Locked');
+      div.title = placed ? `Placed ${placed && (placed.displayLabel || placed.pid) ? (placed.displayLabel || placed.pid) : ''} (set ${placed && placed.set ? placed.set : ''})` : (window.unlocked[r][c] ? 'Unlocked' : 'Locked');
       div.addEventListener('click', ()=> {
         if(window.hasSolution) clearSolution();
         window.unlocked[r][c] = !window.unlocked[r][c];
@@ -549,8 +567,11 @@ function renderPalette(){
   function makeRow(s){
     const row = document.createElement('div'); row.className='shape-row';
     const mini = document.createElement('div'); mini.className='mini';
-    const maxR = Math.max(...s.cells.map(p=>p[0])); const maxC = Math.max(...s.cells.map(p=>p[1]));
-    const h = Math.max(1, Math.min(3, maxR+1)); const w = Math.max(1, Math.min(3, maxC+1));
+    // Allow preview override (used for S10 / S11 tetromino-I horizont/vertical)
+    const maxR = s.cells.length ? Math.max(...s.cells.map(p=>p[0])) : 0;
+    const maxC = s.cells.length ? Math.max(...s.cells.map(p=>p[1])) : 0;
+    const h = s.preview ? Math.max(1, s.preview.rows) : Math.max(1, Math.min(3, maxR+1));
+    const w = s.preview ? Math.max(1, s.preview.cols) : Math.max(1, Math.min(3, maxC+1));
     mini.style.gridTemplateColumns = `repeat(${w},12px)`;
     for(let rr=0; rr<h; rr++){
       for(let cc=0; cc<w; cc++){
@@ -655,8 +676,9 @@ function renderSelectedList(){
     const cells = (inst.rarity==='unique' && inst.cells) ? inst.cells : (st ? st.cells : [[0,0]]);
     const maxR = cells.length ? Math.max(...cells.map(p=>p[0])) : 0;
     const maxC = cells.length ? Math.max(...cells.map(p=>p[1])) : 0;
-    const gridCols = (inst.rarity==='unique') ? 5 : Math.max(1, Math.min(3, maxC+1));
-    const gridRows = (inst.rarity==='unique') ? 5 : Math.max(1, Math.min(3, maxR+1));
+    // use preview override if present (so S10/S11 show 1x4 or 4x1 exactly)
+    const gridCols = (inst.rarity==='unique') ? 5 : (st && st.preview ? Math.max(1, st.preview.cols) : Math.max(1, Math.min(4, maxC+1)));
+    const gridRows = (inst.rarity==='unique') ? 5 : (st && st.preview ? Math.max(1, st.preview.rows) : Math.max(1, Math.min(4, maxR+1)));
 
     const mini = document.createElement('div'); mini.className = 'selected-mini' + (inst.rarity==='unique' ? ' unique' : '');
     mini.style.gridTemplateColumns = `repeat(${gridCols},8px)`;
@@ -773,8 +795,8 @@ function renderIncludedList(placements){
     const cells = st ? st.cells : (p.placement && p.placement.cells ? p.placement.cells : [[0,0]]);
     const maxR = cells.length ? Math.max(...cells.map(q=>q[0])) : 0;
     const maxC = cells.length ? Math.max(...cells.map(q=>q[1])) : 0;
-    const gridCols = p.rarity==='unique' ? 5 : Math.max(1, Math.min(3, maxC+1));
-    const gridRows = p.rarity==='unique' ? 5 : Math.max(1, Math.min(3, maxR+1));
+    const gridCols = p.rarity==='unique' ? 5 : (st && st.preview ? Math.max(1, st.preview.cols) : Math.max(1, Math.min(4, maxC+1)));
+    const gridRows = p.rarity==='unique' ? 5 : (st && st.preview ? Math.max(1, st.preview.rows) : Math.max(1, Math.min(4, maxR+1)));
     mini.style.gridTemplateColumns = `repeat(${gridCols},8px)`;
     mini.style.gridAutoRows = `8px`;
     mini.innerHTML = '';
@@ -900,10 +922,10 @@ function updateExtraIndicator(){
       const s = ex.shape;
       const maxR = s.cells.length ? Math.max(...s.cells.map(p=>p[0])) : 0;
       const maxC = s.cells.length ? Math.max(...s.cells.map(p=>p[1])) : 0;
-      const gridCols = Math.max(1, Math.min(3, maxC+1));
+      const gridCols = s.preview ? Math.max(1, s.preview.cols) : Math.max(1, Math.min(3, maxC+1));
       const mini = document.createElement('div'); mini.className='mini';
       mini.style.gridTemplateColumns = `repeat(${gridCols},12px)`;
-      const h = Math.max(1, Math.min(3, maxR+1));
+      const h = s.preview ? Math.max(1, s.preview.rows) : Math.max(1, Math.min(3, maxR+1));
       for(let rr=0; rr<h; rr++){
         for(let cc=0; cc<gridCols; cc++){
           const mc = document.createElement('div'); mc.className='mcell';
@@ -965,11 +987,6 @@ function showInvalidSelection(err){
 function runSolveOptimize(timeoutMs = 3500){
   // For brevity and safety, the solver uses the same algorithm implemented previously and is robustly wrapped.
   try{
-    // solver implementation (unchanged from previous complete version)
-    // We keep the full solver code integrated — omitted here for brevity in analysis but present in runtime.
-    // In this file it executes the same backtracking logic and updates placedCells, scoreboard, included lists, and extra indicator.
-    // To ensure the file is complete, the solver code is the same as in earlier full builds.
-    // For readability in this message we invoke a self-contained function below that performs the optimization.
     _runSolverInternal(timeoutMs);
   } catch(err){
     console.error('Solver error', err);
@@ -1155,9 +1172,11 @@ function _runSolverInternal(timeoutMs){
   window.placedCells = {};
   for(let i=0;i<best.placements.length;i++){
     const p = best.placements[i];
-    const pid = 'P'+(i+1);
+    const pid = 'P'+(i+1); // unique pid kept for grouping and save/load
+    // displayLabel shows S-1 or S-2 inside tiles (per set). set 0 use 'U'
+    const displayLabel = (p.set === 1) ? 'S-1' : ((p.set === 2) ? 'S-2' : 'U');
     for(const [r,c] of p.placement.cells){
-      window.placedCells[`${r},${c}`] = { pid, iid: p.iid, shapeId: p.shapeId, rarity: p.rarity, set: p.set, colorClass: sizeToColorClassForPlacement(p) };
+      window.placedCells[`${r},${c}`] = { pid, iid: p.iid, shapeId: p.shapeId, rarity: p.rarity, set: p.set, colorClass: sizeToColorClassForPlacement(p), displayLabel };
     }
   }
   updateScoreboard(best.tilesByRarityBySet || { set1:{rare:0,epic:0,super:0}, set2:{rare:0,epic:0,super:0} }, best.setBonus1 || 0, best.setBonus2 || 0);
